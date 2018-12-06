@@ -7,7 +7,7 @@ import org.scalatest.{Matchers, WordSpec}
 
 class Day04Spec extends WordSpec with Matchers {
 
-  val sdf = new SimpleDateFormat()
+  val sdf = new SimpleDateFormat("yyyy-MM-dd HH:mm")
 
   val schedule = """[1518-11-01 00:00] Guard #10 begins shift
     |[1518-11-01 00:05] falls asleep
@@ -31,17 +31,29 @@ class Day04Spec extends WordSpec with Matchers {
   "Guard Chooser" should {
     "marshall the data correctly" in {
 
-      Day04.marshallGuardDuty(schedule)
+      val marshalledDuties = Day04.marshallGuardDuty(schedule).sortBy(_.day)
 
       val duties = Seq(
-        GuardDuty(sdf.parse("1518-11-01"), "10", Seq(Interval(5, 24), Interval(30, 54))),
-        GuardDuty(sdf.parse("1518-11-02"), "99", Seq(Interval(40, 49))),
-        GuardDuty(sdf.parse("1518-11-03"), "10", Seq(Interval(24, 28))),
-        GuardDuty(sdf.parse("1518-11-04"), "99", Seq(Interval(36, 45))),
-        GuardDuty(sdf.parse("1518-11-05"), "99", Seq(Interval(45, 24), Interval(30, 54))),
+        GuardDuty(sdf.parse("1518-11-01 00:00"), "10", Seq(Interval(5, 24), Interval(30, 54))),
+        GuardDuty(sdf.parse("1518-11-01 23:58"), "99", Seq(Interval(40, 49))),
+        GuardDuty(sdf.parse("1518-11-03 00:05"), "10", Seq(Interval(24, 28))),
+        GuardDuty(sdf.parse("1518-11-04 00:02"), "99", Seq(Interval(36, 45))),
+        GuardDuty(sdf.parse("1518-11-05 00:03"), "99", Seq(Interval(45, 54))),
       )
 
+        marshalledDuties shouldBe duties
+    }
 
+    "choose the correct guard asleep" in {
+      val guard = Day04.chooseGuard(schedule)
+
+      guard shouldBe "10"
+    }
+
+    "choose the correct minute" in {
+      val minute = Day04.chosenMinute(schedule, "10")
+
+      minute shouldBe 24
     }
   }
 

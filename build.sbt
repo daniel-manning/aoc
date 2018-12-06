@@ -1,12 +1,9 @@
-import Dependencies._
+name := "Advent of Code"
 
-lazy val root = (project in file(".")).
-  settings(
-    inThisBuild(List(
-      organization := "com.example",
-      scalaVersion := "2.12.7",
-      version      := "0.1.0-SNAPSHOT"
-    )),
-    name := "advent-of-code",
-    libraryDependencies += scalaTest % Test
-  )
+version := "0.1"
+
+scalaVersion := "2.12.7"
+
+libraryDependencies ++= Seq(
+  "org.scalatest" %% "scalatest" % "3.0.3" % "test"
+)
