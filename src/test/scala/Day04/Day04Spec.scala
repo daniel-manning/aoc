@@ -55,6 +55,14 @@ class Day04Spec extends WordSpec with Matchers {
 
       minute shouldBe 24
     }
+
+    "intersect two intervals correctly" in {
+    val intervalOne = Interval(24, 30)
+    val intervalTwo = Interval(29, 40)
+
+    val result = Interval(29,30)
+    Day04.intersectInterval(intervalOne, intervalTwo).get shouldBe result 
+   }
   }
 
 
