@@ -25,7 +25,8 @@ object Day04 {
   def marshallGuardDuty(logLines:List[String]):List[GuardDuty] = {
 
     val marshalledLines = logLines.map(l => loglinePattern.findFirstMatchIn(l).map( mat => (sdf.parse(mat.group(1)), mat.group(2))).get)
-    val actions:Map[Int, List[(Date, String)]] = marshalledLines.groupBy(l => if(l._1.getHours == 23){l._1.getDate + 1 }else{l._1.getDate})
+    val actions:Map[Int, List[(Date, String)]] = marshalledLines.sortBy(_._1).groupBy(l => if(l._1.getHours == 23){l._1.getDate + 1 }else{l._1.getDate})
+    println(s"Marshalled Order: ${actions}")
     actions.map { p =>
       buildGuardDuty(p._2)
     }.toList
@@ -34,7 +35,7 @@ object Day04 {
 
   def buildGuardDuty(logs:List[(Date, String)]):GuardDuty = {
        def wakeUpCycle(logTail:List[(Date, String)]):List[Interval] = {
-       	  if(logTail.isEmpty){
+       	  if(logTail.size < 2){
 		        List()
 	        }else{
 		        val interval = Interval(logTail.head._1.getMinutes, logTail.tail.head._1.getMinutes - 1)
