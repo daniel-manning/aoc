@@ -1,13 +1,15 @@
 package Day04
 
-import java.text.{DateFormat, SimpleDateFormat}
-import java.util.Date
+import java.time.{LocalDate, LocalDateTime, ZoneOffset}
+import java.time.format.DateTimeFormatter
 
 import org.scalatest.{Matchers, WordSpec}
 
 class Day04Spec extends WordSpec with Matchers {
 
-  val sdf = new SimpleDateFormat("yyyy-MM-dd HH:mm")
+  implicit val localDateOrdering: Ordering[LocalDateTime] = Ordering.by(_.toEpochSecond(ZoneOffset.UTC))
+
+  val df: DateTimeFormatter = DateTimeFormatter.ofPattern("yyyy-MM-dd HH:mm")
 
   val schedule = """[1518-11-01 00:00] Guard #10 begins shift
     |[1518-11-01 00:05] falls asleep
@@ -34,14 +36,14 @@ class Day04Spec extends WordSpec with Matchers {
       val marshalledDuties = Day04.marshallGuardDuty(schedule).sortBy(_.day)
 
       val duties = Seq(
-        GuardDuty(sdf.parse("1518-11-01 00:00"), "10", Seq(Interval(5, 24), Interval(30, 54))),
-        GuardDuty(sdf.parse("1518-11-01 23:58"), "99", Seq(Interval(40, 49))),
-        GuardDuty(sdf.parse("1518-11-03 00:05"), "10", Seq(Interval(24, 28))),
-        GuardDuty(sdf.parse("1518-11-04 00:02"), "99", Seq(Interval(36, 45))),
-        GuardDuty(sdf.parse("1518-11-05 00:03"), "99", Seq(Interval(45, 54))),
+        GuardDuty(LocalDateTime.parse("1518-11-01 00:00", df), "10", Seq(Interval(5, 24), Interval(30, 54))),
+        GuardDuty(LocalDateTime.parse("1518-11-01 23:58", df), "99", Seq(Interval(40, 49))),
+        GuardDuty(LocalDateTime.parse("1518-11-03 00:05", df), "10", Seq(Interval(24, 28))),
+        GuardDuty(LocalDateTime.parse("1518-11-04 00:02", df), "99", Seq(Interval(36, 45))),
+        GuardDuty(LocalDateTime.parse("1518-11-05 00:03", df), "99", Seq(Interval(45, 54))),
       )
 
-        marshalledDuties shouldBe duties
+      marshalledDuties shouldBe duties
     }
 
     "choose the correct guard asleep" in {
@@ -55,6 +57,41 @@ class Day04Spec extends WordSpec with Matchers {
 
       minute shouldBe 24
     }
+
+    "find the most popular min" in {
+
+      val marshalledDuties = Day04.marshallGuardDuty(schedule).sortBy(_.day)
+
+      Day04.findMostPopularMin(marshalledDuties) shouldBe ("99", 45)
+    }
+
+    "find interval intersections" in {
+      val intervalOne = Interval(24, 30)
+      val intervalTwo = Interval(29, 40)
+      val intervalThree = Interval(11, 25)
+
+      val results = Day04.findInteralIntersections(List(intervalOne, intervalTwo, intervalThree))
+      results shouldBe List(Interval(29,30), Interval(24,25))
+    }
+
+    "iterate interval intersections" in {
+      val intervalOne = Interval(24, 30)
+      val intervalTwo = Interval(29, 40)
+      val intervalThree = Interval(11, 25)
+
+      val results = Day04.iterateIntervalIntersections(List(intervalOne, intervalTwo, intervalThree))
+      results shouldBe List()
+    }
+
+    "iterate interval intersections - non-empty" in {
+      val intervalOne = Interval(24, 30)
+      val intervalTwo = Interval(29, 40)
+      val intervalThree = Interval(30, 40)
+
+      val results = Day04.iterateIntervalIntersections(List(intervalOne, intervalTwo, intervalThree))
+      results shouldBe List(Interval(30,30))
+    }
+
 
     "intersect two intervals correctly" in {
     val intervalOne = Interval(24, 30)
