@@ -2,8 +2,8 @@ package Day01
 
 import scala.io.Source
 
-object Test02Loader extends App {
-  val frequencyChanges = Source.fromResource("input_day_01_01").getLines().toList.map(_.toInt)
+object Day01_02Loader extends App {
+  val frequencyChanges = Source.fromResource("day_01_01_input").getLines().toList.map(_.toInt)
   val firstRepeat = Callibration.scanList(0, frequencyChanges)
   println(s"First repeated frequency is $firstRepeat")
 }

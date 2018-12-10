@@ -35,12 +35,12 @@ class Day04Spec extends WordSpec with Matchers {
 
       val marshalledDuties = Day04.marshallGuardDuty(schedule).sortBy(_.day)
 
-      val duties = Seq(
-        GuardDuty(LocalDateTime.parse("1518-11-01 00:00", df), "10", Seq(Interval(5, 24), Interval(30, 54))),
-        GuardDuty(LocalDateTime.parse("1518-11-01 23:58", df), "99", Seq(Interval(40, 49))),
-        GuardDuty(LocalDateTime.parse("1518-11-03 00:05", df), "10", Seq(Interval(24, 28))),
-        GuardDuty(LocalDateTime.parse("1518-11-04 00:02", df), "99", Seq(Interval(36, 45))),
-        GuardDuty(LocalDateTime.parse("1518-11-05 00:03", df), "99", Seq(Interval(45, 54))),
+      val duties = List(
+        GuardDuty(LocalDateTime.parse("1518-11-01 00:00", df), "10", List(Interval(5, 24), Interval(30, 54))),
+        GuardDuty(LocalDateTime.parse("1518-11-01 23:58", df), "99", List(Interval(40, 49))),
+        GuardDuty(LocalDateTime.parse("1518-11-03 00:05", df), "10", List(Interval(24, 28))),
+        GuardDuty(LocalDateTime.parse("1518-11-04 00:02", df), "99", List(Interval(36, 45))),
+        GuardDuty(LocalDateTime.parse("1518-11-05 00:03", df), "99", List(Interval(45, 54))),
       )
 
       marshalledDuties shouldBe duties

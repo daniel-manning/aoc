@@ -1,7 +1,8 @@
-import Day01.Callibration
+package Day01
+
 import org.scalatest.FeatureSpec
 
-class Test02Spec extends FeatureSpec {
+class Day01_02Spec extends FeatureSpec {
 
   feature("Callibrator") {
     scenario("finds the correct repeat of a list of two") {
