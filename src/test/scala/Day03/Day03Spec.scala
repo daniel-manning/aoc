@@ -39,21 +39,6 @@ class Day03Spec extends WordSpec with Matchers {
       Overlap.calculateOverlap(rectangles) shouldBe 4
     }
 
-
-    "finds the point in a rectangle" ignore {
-      val point = (1.5, 3.5)
-      val rectangle = Rectangle.stringToRectangle("#1 @ 1,3: 4x4")
-
-      Overlap.pointInRectangle(point, rectangle) shouldBe true
-    }
-
-    "finds the point out of a rectangle" ignore {
-      val point = (0.5, 3.5)
-      val rectangle = Rectangle.stringToRectangle("#1 @ 1,3: 4x4")
-
-      assert(!Overlap.pointInRectangle(point, rectangle))
-    }
-
   }
 
 

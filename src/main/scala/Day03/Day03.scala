@@ -35,38 +35,44 @@ object Rectangle {
 object Day03 extends App{
   val rectangles = Source.fromResource("day03_input").getLines.toList.map(Rectangle.stringToRectangle)
   val areaOfOverlap = Overlap.calculateOverlap(rectangles)
+  println(s"The overlap area is $areaOfOverlap")
 }
 
 
 object Overlap {
 
-  def calculateOverlap(shapes:List[Rectangle]):Int = {
-    def compare(rectangles:List[Rectangle]):List[Rectangle] = {
-      if(rectangles.isEmpty){
-        List[Rectangle]()
-      }else{
-        //println(s"intervals: ${intervals.tail.map(interval => intersectInterval(intervals.head, interval)).filter(_.isDefined)}")
-        val others = rectangles.tail.map( rectangle => rectangles.head.intersect(rectangle)).filter(_.isDefined).map(_.get)
-        others.distinct ++  compare(rectangles.tail).distinct
-      }
+  def compare(rectangles:List[Rectangle]):List[Rectangle] = {
+    if(rectangles.isEmpty){
+      List[Rectangle]()
+    }else{
+      //println(s"intervals: ${intervals.tail.map(interval => intersectInterval(intervals.head, interval)).filter(_.isDefined)}")
+      val others = rectangles.tail.map( rectangle => rectangles.head.intersect(rectangle)).filter(_.isDefined).map(_.get)
+      others.distinct ++  compare(rectangles.tail).distinct
     }
-
-    val overlaps = compare(shapes)
-    println(s"overlaps: ${overlaps}")
-
-    val area = overlaps.map(r => (r.width*r.height)).sum
-    println(s"Area: ${area} from ${overlaps.size} overlaps")
-    val secondOrder = compare(overlaps)
-    val secondOrderArea = secondOrder.map(r => (r.width*r.height)).sum
-    println(s"Second Order Area: ${secondOrderArea} from ${secondOrder.size} overlaps")
-
-    area
   }
 
-  def pointInRectangle(point:(Double, Double), rectangle: Rectangle):Boolean = {
-    println(s"point: $point rectangle: $rectangle")
-    (rectangle.origin._1 <= point._1) && (point._1 <= rectangle.origin._1 + rectangle.width) &&
-      (rectangle.origin._2 <= point._2) && (point._2 <= rectangle.origin._2 + rectangle.height)
+  def inclusionExclusion(shapes:List[Rectangle], multiplier:Int = 1):List[(Int, Int)] = {
+    if(shapes.isEmpty){
+      List[(Int, Int)]()
+    }else if(shapes.size == 1){
+      List((multiplier, area(shapes.head)))
+    }else{
+      (multiplier, shapes.map(area).sum) :: inclusionExclusion(compare(shapes), -1*multiplier)
+    }
+  }
+
+  def area(rectangle: Rectangle):Int ={
+    rectangle.width*rectangle.height
+  }
+
+  def calculateOverlap(shapes:List[Rectangle]):Int = {
+
+
+    val overlaps = inclusionExclusion(compare(shapes))
+    println(overlaps)
+    val area = overlaps.foldRight(0){(a,b) => b + a._1*a._2}
+
+    area
   }
 
 }
