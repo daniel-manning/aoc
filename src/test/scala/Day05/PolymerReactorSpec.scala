@@ -16,7 +16,27 @@ class PolymerReactorSpec extends WordSpec with Matchers {
     "not react when there is nothing to react" in {
       val polyString = "abAB"
 
+      PolymerReactor.scanAndReactPolymer(polyString) shouldBe "abAB"
+    }
+
+    "react in two stages when new pairs are created from deletion" in {
+      val polyString = "abBA"
       PolymerReactor.scanAndReactPolymer(polyString) shouldBe ""
+    }
+
+    "matching polarities are unreactive" in {
+      val polyString = "aabAAB"
+      PolymerReactor.scanAndReactPolymer(polyString) shouldBe "aabAAB"
+    }
+
+    "a mutistage reaction will still react" in {
+      val polyString = "dabAcCaCBAcCcaDA"
+      PolymerReactor.scanAndReactPolymer(polyString) shouldBe "dabCBAcaDA"
+    }
+
+    "count the correct number of unreacted units" in {
+      val polyString = "dabAcCaCBAcCcaDA"
+      PolymerReactor.countUnreactedPolymers(polyString) shouldBe 10
     }
   }
 
