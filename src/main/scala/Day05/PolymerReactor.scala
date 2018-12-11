@@ -12,11 +12,32 @@ object Day05 extends App {
 }
 
 object Day05_02 extends App {
-  val polymerChain = "dabCBAcaDA"
+  //val polymerChain = "dabCBAcaDA"
+  val polymerChain = Source.fromResource("day05_reduced").getLines.toList.head
   val incidences = polymerChain.map(_.toLower).groupBy(identity).map(p => (p._1, p._2.length))
-  println(incidences)
-}
+  def unreactedWithBlocker(char:Char):Int = polymerChain.sliding(3).toList.count(a => a.toList match {
+    case List(b, c, d) if c.toLower == char => PolymerReactor.areSameLetterButDifferentCase(b, d)
+    case List(b, c, d) => false
+    case _ => false
+  })
 
+
+  println(incidences)
+  println(s"unreactedwithblocker: ${incidences.toList.map(a => (a._1, unreactedWithBlocker(a._1))).sortBy(a => a._2)}")
+
+  val replacedPolymers = incidences.toList.map(a => (a._1, replaceAndReactLength(a._1)))
+
+  def replaceAndReactLength(char:Char):Int = {
+    val newPolymer = polymerChain.replace(""+char.toLower, "").replace(""+char.toUpper, "")
+    val newCount = PolymerReactor.countUnreactedPolymers(newPolymer)
+    println(s"When we replace $char: $newCount")
+
+    newCount
+  }
+
+  println(s"replacedPolymers: $replacedPolymers")
+
+}
 
 object PolymerReactor {
 
