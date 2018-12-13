@@ -18,7 +18,7 @@ case class Graph(edges:List[Edge]){
 object Day07Runner extends App {
   val taskOrders:List[String] = Source.fromResource("day07_input").getLines.toList
   val taskOrder = Day07.defineLinearTaskRepr(Day07.generateDependencyGraph(taskOrders))
-  println(s"We need to follow the tasks in this order: $taskOrder")
+  println(s"We need to follow the tasks in this order: ${taskOrder.mkString}")
 }
 
 
@@ -36,7 +36,7 @@ object Day07 {
   }
 
 
-  def defineLinearTaskRepr(dependencyGraph:Graph):Set[Node] = {
+  def defineLinearTaskRepr(dependencyGraph:Graph):List[Node] = {
     val toSet:Set[Node] = dependencyGraph.edges.foldRight(Set[Node]()){(a,b) => b + a._2 }
     val fromSet:Set[Node] = dependencyGraph.edges.foldRight(Set[Node]()){(a,b) => b + a._1}
 
@@ -49,19 +49,19 @@ object Day07 {
 
     val everythingLeftToComplete = toSet.diff(source)
 
-    iterateUntilDone(dependencyGraph, source, everythingLeftToComplete)
+    iterateUntilDone(dependencyGraph, source.toList, everythingLeftToComplete)
   }
 
-  def iterateUntilDone(dependencyGraph:Graph, completedTasks:Set[Node], everythingLeftToComplete:Set[Node]):Set[Node] = {
+  def iterateUntilDone(dependencyGraph:Graph, completedTasks:List[Node], everythingLeftToComplete:Set[Node]):List[Node] = {
     if(everythingLeftToComplete.isEmpty){
       completedTasks
     }else{
         val justCompleted = lookupNextTask(dependencyGraph, completedTasks, everythingLeftToComplete).toSet
-        iterateUntilDone(dependencyGraph, completedTasks ++ justCompleted, everythingLeftToComplete)
+        iterateUntilDone(dependencyGraph, completedTasks ++ justCompleted, everythingLeftToComplete.diff(justCompleted))
     }
   }
 
-  def lookupNextTask(dependencyGraph:Graph, completedTasks:Set[Node], everythingLeftToComplete:Set[Node]):List[Node] = {
+  def lookupNextTask(dependencyGraph:Graph, completedTasks:List[Node], everythingLeftToComplete:Set[Node]):List[Node] = {
 
     dependencyGraph.edges.groupBy(_._2)
         .filter(a => everythingLeftToComplete.contains(a._1))
