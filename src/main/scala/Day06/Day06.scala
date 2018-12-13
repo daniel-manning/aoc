@@ -15,6 +15,15 @@ object Day06 extends App{
   println(s"Largest finite are is ${largestArea._2} which is target ${targets(largestArea._1)}")
 }
 
+object Day06_02 extends App{
+  val targets:List[(Int, Int)] = Source.fromResource("day06_input").getLines.toList.map(s => s.split(",").toList match {
+    case List(a, b) => (a.trim.toInt, b.trim.toInt)
+  })
+
+  val regionOfMinimumDistance = Distance.calcuateRegion(targets, 10000)
+  println(s"Area of the region of minimum distance is ${regionOfMinimumDistance.size}")
+}
+
 
 
 object Distance {
@@ -57,6 +66,20 @@ object Distance {
     val contenders:List[(Int, Int)] = targets.zipWithIndex.map(p => (p._2, manhattanDistance(point, p._1))).filter(p => p._2 == minVal)
 
     if(contenders.size > 1) None else Some(contenders.head._1)
+  }
+
+  def distanceToAllTargets(point:(Int, Int), targets:List[(Int, Int)]):Int = {
+    targets.map(p => manhattanDistance(p, point)).sum
+  }
+
+  def calcuateRegion(targets:List[(Int, Int)], maxDistance:Int):List[(Int,Int)] = {
+    val maxWidth = targets.maxBy(_._1)._1 + 1
+    val maxHeight = targets.maxBy(_._2)._2 + 1
+
+    val grid = generateGrid(maxWidth, maxHeight)
+
+    grid.filter(p => distanceToAllTargets(p, targets) < maxDistance)
+
   }
 
 }

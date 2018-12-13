@@ -32,5 +32,22 @@ class Day06Spec extends WordSpec with Matchers {
 
       Distance.targetClosestTo(point, targets) shouldBe Some(0)
     }
+
+    "distance to all points sums correctly" in {
+      val targets = List((1, 1), (1, 6), (8, 3), (3, 4), (5, 5), (8, 9))
+      val point = (4,3)
+
+      Distance.distanceToAllTargets(point, targets) shouldBe 30
+    }
+
+    "region of maximum distance should be calculated correctly" in {
+      val targets = List((1, 1), (1, 6), (8, 3), (3, 4), (5, 5), (8, 9))
+      val point = (4,3)
+
+      val region = Distance.calcuateRegion(targets, 32)
+
+      region.size shouldBe 16
+      region.contains(point) shouldBe true
+    }
   }
 }
