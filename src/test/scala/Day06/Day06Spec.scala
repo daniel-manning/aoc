@@ -20,11 +20,17 @@ class Day06Spec extends WordSpec with Matchers {
 
     "calculate claimed areas" in { 
       val targets = List((1, 1), (1, 6), (8, 3), (3, 4), (5, 5), (8, 9))
-      val answers = List((1,), (2,), (3,), (4,), (5,), (6,))
+      val answers = List((4, 17), (3, 9))
 
-      Distance.calculateAreas(targets)
+      Distance.calculateAreas(targets) shouldBe answers
+    }
 
 
+    "give point closest to it when there is a clear winner" in {
+      val targets = List((1, 1), (1, 6))
+      val point = (1,2)
+
+      Distance.targetClosestTo(point, targets) shouldBe Some(0)
     }
   }
 }
