@@ -15,12 +15,19 @@ case class Graph(edges:List[Edge]){
 
 }
 
+case class WorkListItem(worker:Int, task:Node, fromTil:(Int, Int))
+
 object Day07Runner extends App {
   val taskOrders:List[String] = Source.fromResource("day07_input").getLines.toList
   val taskOrder = Day07.defineLinearTaskRepr(Day07.generateDependencyGraph(taskOrders))
   println(s"We need to follow the tasks in this order: ${taskOrder.mkString}")
 }
 
+object Day07Runner_02 extends App {
+  val taskOrders:List[String] = Source.fromResource("day07_input").getLines.toList
+  val timeToBuild = Day07.timeToComplete(Day07.generateWorkList(Day07.generateDependencyGraph(taskOrders), noOfWorkers = 5))
+  println(s"We need this amount of time to finish the build: $timeToBuild")
+}
 
 object Day07 {
   val stepDependencyPattern = "Step ([A-Z]) must be finished before step ([A-Z]) can begin.".r
@@ -37,14 +44,8 @@ object Day07 {
 
   def defineLinearTaskRepr(dependencyGraph:Graph):List[Node] = {
     val toSet:Set[Node] = dependencyGraph.edges.foldRight(Set[Node]()){(a,b) => b + a._2 }
-    val fromSet:Set[Node] = dependencyGraph.edges.foldRight(Set[Node]()){(a,b) => b + a._1}
-
-    println(s"toSet: $toSet")
-    println(s"fromSet: $fromSet")
-    println(s"nodes: ${dependencyGraph.nodes()}")
 
     val source = dependencyGraph.nodes().diff(toSet)
-    println(s"source: $source")
 
     val everythingLeftToComplete = toSet.diff(source)
 
@@ -56,13 +57,11 @@ object Day07 {
       completedTasks
     }else{
         val (justCompleted, workLeftAvailableToPlay) = lookupNextTask(dependencyGraph, completedTasks, workAvailableToPlay, everythingLeftToComplete)
-        println(s"justCompleted: ${justCompleted} workLeftAvailableToPlay: $workLeftAvailableToPlay")
         iterateUntilDone(dependencyGraph, completedTasks :+ justCompleted, workLeftAvailableToPlay, everythingLeftToComplete.filterNot(_ == justCompleted))
     }
   }
 
   def lookupNextTask(dependencyGraph:Graph, completedTasks:List[Node], workAvailableToPlay:List[Node], everythingLeftToComplete:Set[Node]):(Node, List[Node])  = {
-    //println(s"extras: $extras")
     val waitingToTickOff = dependencyGraph.edges.groupBy(_._2)
       .filter(a => everythingLeftToComplete.contains(a._1))
       .filter(a => a._2.forall(b => completedTasks.contains(b._1)))
@@ -72,8 +71,63 @@ object Day07 {
     (next, (workAvailableToPlay ++ waitingToTickOff).distinct.filterNot(_ == next))
   }
 
-  def timeToComplete(dependencyGraph: Graph, noOfWorkers: Int):Int = {
-    ???
+  //-----------------------------
+  def timeToComplete(workList:List[WorkListItem]):Int = {
+    workList.maxBy(_.fromTil._2).fromTil._2
+  }
+
+  def generateWorkList(dependencyGraph: Graph, noOfWorkers: Int):List[WorkListItem] = {
+    val toSet:Set[Node] = dependencyGraph.edges.foldRight(Set[Node]()){(a,b) => b + a._2 }
+
+    val source = dependencyGraph.nodes().diff(toSet)
+    val everythingLeftToComplete = toSet.diff(source)
+
+    iterateWorkListUntilDone(dependencyGraph, noOfWorkers, List(), List(), source.toList, everythingLeftToComplete, 0)
+  }
+
+  def iterateWorkListUntilDone(dependencyGraph:Graph,
+                               noOfWorkers: Int,
+                               completedTasks:List[WorkListItem],
+                               currentWork:   List[WorkListItem],
+                               workAvailableToPlay:List[Node],
+                               everythingLeftToComplete:Set[Node],
+                               currentTime:Int):List[WorkListItem] = {
+    if(everythingLeftToComplete.isEmpty && workAvailableToPlay.isEmpty && currentWork.isEmpty){
+      completedTasks
+    }else{
+      //fill up workers from available work
+      val occupiedWorkers = currentWork.map(_.worker)
+      val availableWorkers = (1 to noOfWorkers).toSet.diff(occupiedWorkers.toSet)
+      val newWorkListItems = workAvailableToPlay zip availableWorkers map {a => WorkListItem(a._2, a._1, calculateDuration(currentTime, a._1)) }
+
+      val workNotActioned = workAvailableToPlay.toSet.diff(newWorkListItems.map(_.task).toSet).toList
+
+      val allOngoingWork = currentWork ++ newWorkListItems
+      //move to next time a task finish (may be multiple tasks finishing at the same time
+      val endTime:Int = allOngoingWork.minBy(_.fromTil._2).fromTil._2
+      val workNowEnded:List[WorkListItem] = allOngoingWork.filter(_.fromTil._2 == endTime)
+      val leftoverOngoingWork = allOngoingWork.toSet.diff(workNowEnded.toSet).toList
+
+      //fill up available work
+      val waitingToTickOff:List[Node] = dependencyGraph.edges.groupBy(_._2)
+        .filter(a => everythingLeftToComplete.contains(a._1))
+        .filter(a => a._2.forall(b => (completedTasks ++ workNowEnded).map(_.task).contains(b._1)))
+        .toList.map(_._1)
+
+      //iterate
+      iterateWorkListUntilDone(dependencyGraph, noOfWorkers,
+        completedTasks ++ workNowEnded,
+        leftoverOngoingWork,
+        (workNotActioned ++ waitingToTickOff).distinct,
+        everythingLeftToComplete.diff(waitingToTickOff.toSet),
+        endTime
+      )
+    }
+  }
+
+  def calculateDuration(currentTime: Int, node: Node):(Int, Int) = {
+    val duration = node.head.toInt - 4
+    (currentTime, currentTime + duration)
   }
 
 }

@@ -47,9 +47,31 @@ class Day07Spec extends WordSpec with Matchers{
     }
 
     "project plan with 2 workers" in {
+      val workList = List(WorkListItem(1, "C", (0,3)),
+                          WorkListItem(1, "A", (3,4)),
+                          WorkListItem(2, "F", (3,9)),
+                          WorkListItem(1, "B", (4,6)),
+                          WorkListItem(1, "D", (6,10)),
+                          WorkListItem(1, "E", (10,15)))
+
+      Day07.timeToComplete(workList) shouldBe 15
+    }
+
+    "distribute work correctly" ignore  {
+      val workList = List(WorkListItem(1, "C", (0,63)),
+        WorkListItem(1, "A", (63,124)),
+        WorkListItem(2, "F", (63,129)),
+        WorkListItem(1, "B", (124,186)),
+        WorkListItem(1, "D", (186,250)),
+        WorkListItem(1, "E", (250,315)))
+
       val dependencyGraph = Day07.generateDependencyGraph(stepData)
 
-      Day07.timeToComplete(dependencyGraph, 2) shouldBe 15
+      Day07.generateWorkList(dependencyGraph, 2) shouldBe workList
+    }
+
+    "calculate duration" in {
+      Day07.calculateDuration(0, "C") shouldBe (0, 63)
     }
   }
 
