@@ -43,7 +43,7 @@ class Day07Spec extends WordSpec with Matchers{
       val completedTasks = Set("C")
       val everythingLeftToComplete = toSet.diff(completedTasks)
 
-      Day07.lookupNextTask(dependencyGraph, completedTasks.toList, everythingLeftToComplete) shouldBe "A"
+      Day07.lookupNextTask(dependencyGraph, completedTasks.toList, everythingLeftToComplete, List()) shouldBe "A"
     }
   }
 
