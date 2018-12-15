@@ -49,5 +49,7 @@ class Day06Spec extends WordSpec with Matchers {
       region.size shouldBe 16
       region.contains(point) shouldBe true
     }
+
+
   }
 }

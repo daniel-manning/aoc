@@ -20,8 +20,8 @@ class Day07Spec extends WordSpec with Matchers{
     }
 
 
-    "generate graph" ignore {
-      val edges = Graph(List(("C","A"), ("C","F"), ("A","B"), ("A","D"), ("B","E"), ("D","E"), ("C","A")))
+    "generate graph" in {
+      val edges = Graph(List(("C","A"), ("C","F"), ("A","B"), ("A","D"), ("B","E"), ("D","E"), ("F","E")))
       val dependencyGraph = Day07.generateDependencyGraph(stepData)
       dependencyGraph shouldBe edges
     }
@@ -43,7 +43,7 @@ class Day07Spec extends WordSpec with Matchers{
       val completedTasks = Set("C")
       val everythingLeftToComplete = toSet.diff(completedTasks)
 
-      Day07.lookupNextTask(dependencyGraph, completedTasks, everythingLeftToComplete) shouldBe List("A", "F")
+      Day07.lookupNextTask(dependencyGraph, completedTasks.toList, everythingLeftToComplete) shouldBe "A"
     }
   }
 

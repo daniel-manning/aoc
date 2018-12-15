@@ -56,17 +56,19 @@ object Day07 {
     if(everythingLeftToComplete.isEmpty){
       completedTasks
     }else{
-        val justCompleted = lookupNextTask(dependencyGraph, completedTasks, everythingLeftToComplete).toSet
-        iterateUntilDone(dependencyGraph, completedTasks ++ justCompleted, everythingLeftToComplete.diff(justCompleted))
+        val justCompleted = lookupNextTask(dependencyGraph, completedTasks, everythingLeftToComplete)
+        //println(s"justCompleted: ${justCompleted}")
+        iterateUntilDone(dependencyGraph, completedTasks :+ justCompleted, everythingLeftToComplete.diff(Set(justCompleted)))
     }
   }
 
-  def lookupNextTask(dependencyGraph:Graph, completedTasks:List[Node], everythingLeftToComplete:Set[Node]):List[Node] = {
+  def lookupNextTask(dependencyGraph:Graph, completedTasks:List[Node], everythingLeftToComplete:Set[Node]):Node = {
 
     dependencyGraph.edges.groupBy(_._2)
-        .filter(a => everythingLeftToComplete.contains(a._1))
-        .filter(a => a._2.forall(b => completedTasks.contains(b._1)))
-        .toList.map(_._1).sorted
+      .filter(a => everythingLeftToComplete.contains(a._1))
+      .filter(a => a._2.forall(b => completedTasks.contains(b._1)))
+      .toList.map(_._1)
+      .min
   }
 
 }
