@@ -23,7 +23,6 @@ object Day07Runner extends App {
 
 
 object Day07 {
-
   val stepDependencyPattern = "Step ([A-Z]) must be finished before step ([A-Z]) can begin.".r
 
 
@@ -49,27 +48,32 @@ object Day07 {
 
     val everythingLeftToComplete = toSet.diff(source)
 
-    iterateUntilDone(dependencyGraph, List(source.min), everythingLeftToComplete, source.diff(Set(source.min)).toList)
+    iterateUntilDone(dependencyGraph, List(source.min), source.diff(Set(source.min)).toList, everythingLeftToComplete)
   }
 
-  def iterateUntilDone(dependencyGraph:Graph, completedTasks:List[Node], everythingLeftToComplete:Set[Node], extras:List[Node]):List[Node] = {
+  def iterateUntilDone(dependencyGraph:Graph, completedTasks:List[Node], workAvailableToPlay:List[Node], everythingLeftToComplete:Set[Node]):List[Node] = {
     if(everythingLeftToComplete.isEmpty){
       completedTasks
     }else{
-        val justCompleted = lookupNextTask(dependencyGraph, completedTasks, everythingLeftToComplete, extras)
-        //println(s"justCompleted: ${justCompleted}")
-        iterateUntilDone(dependencyGraph, completedTasks :+ justCompleted, everythingLeftToComplete.diff(Set(justCompleted)), extras.filterNot(_ == justCompleted))
+        val (justCompleted, workLeftAvailableToPlay) = lookupNextTask(dependencyGraph, completedTasks, workAvailableToPlay, everythingLeftToComplete)
+        println(s"justCompleted: ${justCompleted} workLeftAvailableToPlay: $workLeftAvailableToPlay")
+        iterateUntilDone(dependencyGraph, completedTasks :+ justCompleted, workLeftAvailableToPlay, everythingLeftToComplete.filterNot(_ == justCompleted))
     }
   }
 
-  def lookupNextTask(dependencyGraph:Graph, completedTasks:List[Node], everythingLeftToComplete:Set[Node], extras:List[Node]):Node = {
+  def lookupNextTask(dependencyGraph:Graph, completedTasks:List[Node], workAvailableToPlay:List[Node], everythingLeftToComplete:Set[Node]):(Node, List[Node])  = {
     //println(s"extras: $extras")
     val waitingToTickOff = dependencyGraph.edges.groupBy(_._2)
       .filter(a => everythingLeftToComplete.contains(a._1))
       .filter(a => a._2.forall(b => completedTasks.contains(b._1)))
       .toList.map(_._1)
 
-    (waitingToTickOff ++ extras).min
+    val next = (workAvailableToPlay ++ waitingToTickOff).min
+    (next, (workAvailableToPlay ++ waitingToTickOff).distinct.filterNot(_ == next))
+  }
+
+  def timeToComplete(dependencyGraph: Graph, noOfWorkers: Int):Int = {
+    ???
   }
 
 }
