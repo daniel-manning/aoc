@@ -1,6 +1,11 @@
 package Day09
 
-import scala.collection.mutable
+
+case class CircularMarbleList(pointer:Int, marbleList:List[Int]){
+  def moveTwoOnAndAddNextMarble(): CircularMarbleList ={
+    ???
+  }
+}
 
 object Day09 extends App {
 Marbles.addToList()

@@ -15,6 +15,15 @@ object Day08 extends App {
 
 }
 
+object Day08_02 extends App {
+
+  val headerData:List[Int] = Source.fromResource("day08_input").getLines.toList.head.split(" ").map(_.toInt).toList
+  val headerStructure:Node = Marshaller.marshall(headerData)._1
+  val valueOfRootNode = Marshaller.valueOfNode(headerStructure)
+  println(s"Value of root node of structure is: $valueOfRootNode")
+
+}
+
 
 object Marshaller {
 
@@ -43,6 +52,16 @@ object Marshaller {
 
   def sumOverNodes(node:Node):Int = {
     node.data.sum + node.childNodes.map(sumOverNodes).sum
+  }
+
+  def valueOfNode(node:Node):Int = {
+    if(node.childNodes.isEmpty){
+      node.data.sum
+    }else{
+      val referenceNodes = node.childNodes.zipWithIndex
+      val references = node.data
+        references.map(r => referenceNodes.find(p => p._2 == (r-1)).map(a => valueOfNode(a._1)).getOrElse(0)).sum
+    }
   }
 
 

@@ -1,4 +1,5 @@
-import Day08.{Marshaller, Node}
+package Day08
+
 import org.scalatest.{Matchers, WordSpec}
 
 class Day08 extends WordSpec with Matchers {
@@ -36,6 +37,36 @@ class Day08 extends WordSpec with Matchers {
 
       Marshaller.sumOverNodes(nodes) shouldBe 138
     }
+
+    "value a childless node with list" in {
+      val nodeB = Node(List(), List(10, 11, 12))
+
+      Marshaller.valueOfNode(nodeB) shouldBe 33
+    }
+
+    "value a childless node with one member" in {
+      val nodeD = Node(List(), List(99))
+
+      Marshaller.valueOfNode(nodeD) shouldBe 99
+    }
+
+    "value a node with reference to a missing member" in {
+      val nodeD = Node(List(), List(99))
+      val nodeC = Node(List(nodeD), List(2))
+
+      Marshaller.valueOfNode(nodeC) shouldBe 0
+    }
+
+    "value a node with references to children" in {
+      val nodeD = Node(List(), List(99))
+      val nodeC = Node(List(nodeD), List(2))
+      val nodeB = Node(List(), List(10, 11, 12))
+      val nodeA = Node(List(nodeB, nodeC), List(1, 1, 2))
+
+      Marshaller.valueOfNode(nodeA) shouldBe 66
+    }
+
+
   }
 
 
