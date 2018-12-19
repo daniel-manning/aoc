@@ -2,25 +2,21 @@ package Day09
 
 
 case class CircularMarbleList(pointer:Int, marbleList:List[Int]){
-  def moveTwoOnAndAddNextMarble(): CircularMarbleList ={
-    ???
+  def addNextMarbleBetweenTheNextTwo(): CircularMarbleList ={
+    val nextMarble = marbleList.max + 1
+    val newMarbleList = (marbleList.slice(0, pointer+1) :+ nextMarble) ++ marbleList.slice(pointer+1, marbleList.length)
+    CircularMarbleList((pointer + 2) % marbleList.length, newMarbleList)
   }
 }
 
 object Day09 extends App {
-Marbles.addToList()
+
+
 }
 
 
 object Marbles {
 
-  def addToList():Unit = {
-
-    val list = mutable.LinkedList(0)
-    list.insert(mutable.LinkedList(1))
-
-
-  }
 
 
 
