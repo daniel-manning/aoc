@@ -45,21 +45,32 @@ class Day09Spec extends WordSpec with Matchers{
     }
 
     "evolve after the 23 step" in {
-      val setup = CircularMarbleList(8, List(0, 16, 8, 17, 4, 18, 19, 2, 20, 10, 21, 5, 22, 11, 1, 12, 6, 13, 3, 14, 7, 15), 9, 6, 24, List((5, 32)))
-      val result = CircularMarbleList(10, List(0, 16, 8, 17, 4, 18, 19, 2, 24, 20, 10, 21, 5, 22, 11, 1, 12, 6, 13, 3, 14, 7, 15), 9, 7, 25, List((5, 32)))
+      val setup  = CircularMarbleList(7,  List(0, 16, 8, 17, 4, 18, 19, 2, 20, 10, 21, 5, 22, 11, 1, 12, 6, 13, 3, 14, 7, 15), 9, 6, 24, List((5, 32)))
+      val result = CircularMarbleList(9, List(0, 16, 8, 17, 4, 18, 19, 2, 24, 20, 10, 21, 5, 22, 11, 1, 12, 6, 13, 3, 14, 7, 15), 9, 7, 25, List((5, 32)))
 
       Marbles.evolve(setup) shouldBe result
     }
 
     "evolve the pattern including a multiple of 23" in {
-      val result = CircularMarbleList(12, List(0, 16, 8, 17, 4, 18, 19, 2, 24, 20, 25, 10, 21, 5, 22, 11, 1, 12, 6, 13, 3, 14, 7, 15), 9, 8, 26, List((5, 32)))
-      val setup = CircularMarbleList(14, List(0, 16, 8, 17, 4, 18, 9, 19, 2, 20, 10, 21, 5, 22, 11, 1, 12, 6, 13, 3, 14, 7, 15), 9, 5, 23, List())
+      val result = CircularMarbleList(11, List(0, 16, 8, 17, 4, 18, 19, 2, 24, 20, 25, 10, 21, 5, 22, 11, 1, 12, 6, 13, 3, 14, 7, 15), 9, 8, 26, List((5, 32)))
+      val setup  = CircularMarbleList(14, List(0, 16, 8, 17, 4, 18, 9, 19, 2, 20, 10, 21, 5, 22, 11, 1, 12, 6, 13, 3, 14, 7, 15), 9, 5, 23, List())
 
 
       Marbles.runTurns(setup, 3) shouldBe result
     }
 
+    "calculte the highscore of a limited game" in {
+      Marbles.runGame(9, 25) shouldBe 32
+    }
+
+    "calculte the highscore of example limited games" ignore {
+      Marbles.runGame(10, 1618) shouldBe 8317
+      /*Marbles.runGame(13, 7999) shouldBe 146373
+      Marbles.runGame(17, 1104) shouldBe 2764
+      Marbles.runGame(21, 6111) shouldBe 54718
+      Marbles.runGame(30, 5807) shouldBe 37305*/
+
+    }
+
   }
-
-
 }
