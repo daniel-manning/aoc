@@ -19,7 +19,7 @@ class Day11Spec extends WordSpec with Matchers{
       FuelCell.determineCellPower((101,153), 71) shouldBe 4
     }
 
-    "find square of largest total power for grid 18" in  {
+    "find square of largest total power for grid 18" ignore  {
       FuelCell.findlargestTotalPowerSquare(gridSerialNumber = 18) shouldBe ((33,45), Some(29))
     }
 
