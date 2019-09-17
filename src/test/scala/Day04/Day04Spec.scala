@@ -2,6 +2,7 @@ package Day04
 
 import java.time.{LocalDate, LocalDateTime, ZoneOffset}
 import java.time.format.DateTimeFormatter
+import java.util.stream.Collectors
 
 import org.scalatest.{Matchers, WordSpec}
 
@@ -11,7 +12,7 @@ class Day04Spec extends WordSpec with Matchers {
 
   val df: DateTimeFormatter = DateTimeFormatter.ofPattern("yyyy-MM-dd HH:mm")
 
-  val schedule = """[1518-11-01 00:00] Guard #10 begins shift
+  val schedule: List[String] = """[1518-11-01 00:00] Guard #10 begins shift
     |[1518-11-01 00:05] falls asleep
     |[1518-11-01 00:25] wakes up
     |[1518-11-01 00:30] falls asleep
@@ -27,7 +28,7 @@ class Day04Spec extends WordSpec with Matchers {
     |[1518-11-04 00:46] wakes up
     |[1518-11-05 00:03] Guard #99 begins shift
     |[1518-11-05 00:45] falls asleep
-    |[1518-11-05 00:55] wakes up""".stripMargin.lines.toList
+    |[1518-11-05 00:55] wakes up""".stripMargin.split("\n").toList
 
 
   "Guard Chooser" should {

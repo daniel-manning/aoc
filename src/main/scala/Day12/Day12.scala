@@ -17,8 +17,8 @@ object Day12 extends App {
 
   val rulesSet = ruleSetPairs.toMap
 
-  //val potPositions = CellularAutomata.countPotPositions(20, rulesSet, initialState)
-  val potPositions = CellularAutomata.countPotPositions(50000000000l, rulesSet, initialState)
+  val potPositions = CellularAutomata.countPotPositions(20, rulesSet, initialState)
+  //val potPositions = CellularAutomata.countPotPositions(50000000000l, rulesSet, initialState)
 
   println(s"The sum of the positions of the evolved state: $potPositions")
 }
@@ -32,7 +32,10 @@ object CellularAutomata {
     state.sum
   }
 
-  def indexTheInitialState(initalState: String):List[Int] = initalState.zipWithIndex.filter(p => p._1 == '#').toList.map(_._2)
+  def indexTheInitialState(initalState: String):List[Int] = {
+    println(s"state: ${initalState.zipWithIndex}")
+    initalState.zipWithIndex.filter(p => p._1 == '#').toList.map(_._2)
+  }
 
   def evolve(noOfTurns: Long, ruleSet: Map[String, Char], initalState: String):IndexedState = {
     //Sigh
