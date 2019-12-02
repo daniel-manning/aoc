@@ -2,7 +2,13 @@ package Day14
 
 object Day14 extends App {
 
+  val puzzleInput = 637061
+  lazy val next10Score = RecipeList.nextTenRecipes(("37",(0,1)), puzzleInput)
+  lazy val firstAppearance = RecipeList.firstAppearance(("37",(0,1)), puzzleInput.toString)
 
+
+  //println(s"After $puzzleInput recipes the next 10 have value: $next10Score")
+  println(s"$puzzleInput appeared after $firstAppearance recipes")
 }
 
 object RecipeList {
@@ -32,4 +38,19 @@ object RecipeList {
 
   private def lookUpScore(recipeScoreBoard: String, position: Int):Int =
     recipeScoreBoard.substring(position, position+1).toInt
+
+  def evolveState(initialState: (String, (Int, Int))): Iterator[(String, (Int, Int))] =
+    Iterator.iterate(initialState)(nextStep)
+
+  def nextTenRecipes(initialState: (String, (Int, Int)), afterNoOfRecipes: Int):String =
+    evolveState(initialState)
+      .dropWhile(l => {println(l._1.length); l._1.length < (afterNoOfRecipes + 10)})
+      .next._1
+      .slice(afterNoOfRecipes, afterNoOfRecipes + 10)
+
+  def firstAppearance(initialState: (String, (Int, Int)), matchingString: String):Int =
+    evolveState(initialState)
+      .dropWhile(l => {println(l._1.length); !l._1.contains(matchingString)})
+      .next._1
+      .indexOf(matchingString)
 }
