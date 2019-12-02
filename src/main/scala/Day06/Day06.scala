@@ -1,6 +1,7 @@
 package Day06
 
 import scala.io.Source
+import scala.language.postfixOps
 
 //type Point = (Int, Int)
 
