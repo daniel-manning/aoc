@@ -6,7 +6,7 @@ object Day01 extends App {
 
   def calculateFuelForModuleMass(moduleMass:Int):Int = Math.floor(moduleMass/3).toInt - 2
 
-  val moduleMasses = Source.fromResource("day01_2019_input")
+  val moduleMasses = Source.fromResource("2019/day01_2019_input")
     .getLines().toList
     .map(_.toInt)
 
