@@ -39,4 +39,28 @@ class Day04Spec extends AnyWordSpec with Matchers {
     }
   }
 
+  "foldUpRuns" should {
+    "create a list of tuples when there are no runs" in {
+      Day04.foldUpRuns(Seq(3,4,5,7,9)) shouldBe Seq((3,1),(4,1),(5,1),(7,1),(9,1))
+    }
+
+    "create a list of tuples when there are runs" in {
+      Day04.foldUpRuns(Seq(3,4,4,4,5,5,9,7,7)) shouldBe Seq((3,1),(4,3),(5,2),(9,1),(7,2))
+    }
+  }
+
+  "new criteria" should {
+    "pass in test case one" in {
+      Day04.hasTwoAdjacentNumbersTheSameNotALongerRun(Day04.constructSequence(112233)) shouldBe true
+    }
+
+    "fail in test case two" in {
+      Day04.hasTwoAdjacentNumbersTheSameNotALongerRun(Day04.constructSequence(123444)) shouldBe false
+    }
+
+    "pass in test case three" in {
+      Day04.hasTwoAdjacentNumbersTheSameNotALongerRun(Day04.constructSequence(111122)) shouldBe true
+    }
+  }
+
 }
