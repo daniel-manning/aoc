@@ -14,8 +14,12 @@ case class IntCodeProgramme(pointer: Int = 0,
       case ("02", mask) => MultiplyOperation(programme(pointer + 1), programme(pointer + 2), programme(pointer + 3), mask)
       case ("03", mask) => InputOperation(programme(pointer + 1), mask)
       case ("04", mask) => OutputOperation(programme(pointer + 1), mask)
+      case ("05", mask) => JumpIfTrueOperation(programme(pointer + 1), programme(pointer + 2), mask)
+      case ("06", mask) => JumpIfFalseOperation(programme(pointer + 1), programme(pointer + 2), mask)
+      case ("07", mask) => LessThanOperation(programme(pointer + 1), programme(pointer + 2), programme(pointer + 3), mask)
+      case ("08", mask) => EqualOperation(programme(pointer + 1), programme(pointer + 2), programme(pointer + 3), mask)
       case ("99", _) => ExitOperation
-      case (_, _) => throw new RuntimeException("Out of Cheese Error. Redo from Start")
+      case (a, _) => {println(s"Oh NO: $a"); throw new RuntimeException("Out of Cheese Error. Redo from Start")}
     }
   }
 

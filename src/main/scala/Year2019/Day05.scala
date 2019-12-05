@@ -19,7 +19,14 @@ object Day05 extends App {
     inputStack = new mutable.Stack().push(1))
   val endProgramme = diagnosticProgramme.runProgramme()
 
-  println("Finished running diagnostics: Output ....")
+  println("Part 1: Finished running diagnostics: Output ....")
   endProgramme.outputStack.foreach(println)
+
+  val diagnosticThermalProgramme = IntCodeProgramme(
+    programme = diagnosticProgrammeSource,
+    inputStack = new mutable.Stack().push(5))
+  val endThermalProgramme = diagnosticThermalProgramme.runProgramme()
+  println("Part 2: Finished running diagnostics: Output ....")
+  endThermalProgramme.outputStack.foreach(println)
 
 }
