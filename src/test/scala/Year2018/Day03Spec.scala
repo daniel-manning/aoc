@@ -5,7 +5,7 @@ import org.scalatest.wordspec.AnyWordSpec
 
 class Day03Spec extends AnyWordSpec with Matchers {
 
-  "Rectangle" ignore {
+  "Rectangle" should {
 
 
     "intersect two seperate rectangles with nothing" in {

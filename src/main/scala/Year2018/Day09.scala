@@ -3,7 +3,7 @@ package Year2018
 case class CircularMarbleList(pointer:Int, marbleList:List[Int], noOfPlayers:Int, currentPlayer:Int, marbleToPlace:Int, playerScores:List[(Int, Int)]){
   def keepMarbleTakeOneSevenBack(): CircularMarbleList = {
     val newMarbleList = marbleList.slice(0, circle(pointer-8)) ++ marbleList.slice(circle(pointer-7), marbleList.length)
-    println(s"takenMarbleList: ${marbleList.slice(circle(pointer-8),circle(pointer-7))} for pointer: ${pointer}")
+    //println(s"takenMarbleList: ${marbleList.slice(circle(pointer-8),circle(pointer-7))} for pointer: ${pointer}")
     val takenMarble:Int = marbleList.slice(circle(pointer-8),circle(pointer-7)).head
     val playerAffectedScore:Int = playerScores.find(p => p._1 == currentPlayer).getOrElse((currentPlayer,0))._2
     val newPlayerScores = playerScores.filter(p => p._1 == currentPlayer) :+ (currentPlayer, playerAffectedScore + takenMarble + nextMarble)

@@ -14,10 +14,10 @@ class Day07Spec extends AnyWordSpec with Matchers {
     "Step D must be finished before step E can begin.",
     "Step F must be finished before step E can begin.")
 
-  "Day07" ignore {
+  "Day07" should {
     "marshall data" in {
       val stepData = "Step C must be finished before step A can begin."
-      Day07.marshallData(List(stepData)) shouldBe List(("C", "A"))
+      Day07.marshallData(List(stepData)) shouldBe List(Edge(WorkNode("C"), WorkNode("A")))
     }
 
 
@@ -37,12 +37,12 @@ class Day07Spec extends AnyWordSpec with Matchers {
     "generate WorkNode list" in {
       val dependencyGraph = Day07.generateDependencyGraph(stepData)
 
-      dependencyGraph.nodes() shouldBe TreeSet("A", "B", "C", "D", "E", "F")
+      dependencyGraph.nodes() shouldBe TreeSet(WorkNode("A"), WorkNode("B"), WorkNode("C"), WorkNode("D"), WorkNode("E"), WorkNode("F"))
     }
 
     "generate linear repr" in {
       val dependencyGraph = Day07.generateDependencyGraph(stepData)
-      Day07.defineLinearTaskRepr(dependencyGraph) shouldBe List("C", "A", "B", "D", "F", "E")
+      Day07.defineLinearTaskRepr(dependencyGraph) shouldBe List(WorkNode("C"), WorkNode("A"), WorkNode("B"), WorkNode("D"), WorkNode("F"), WorkNode("E"))
     }
 
     "work out next task" in {
@@ -51,7 +51,7 @@ class Day07Spec extends AnyWordSpec with Matchers {
       val completedTasks = Set(WorkNode("C"))
       val everythingLeftToComplete = toSet.diff(completedTasks)
 
-      Day07.lookupNextTask(dependencyGraph, completedTasks.toList, List(), everythingLeftToComplete) shouldBe ("A", List("F"))
+      Day07.lookupNextTask(dependencyGraph, completedTasks.toList, List(), everythingLeftToComplete) shouldBe (WorkNode("A"), List(WorkNode("F")))
     }
 
     "project plan with 2 workers" in {

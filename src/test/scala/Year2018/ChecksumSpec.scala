@@ -5,7 +5,7 @@ import org.scalatest.wordspec.AnyWordSpec
 
 class ChecksumSpec extends AnyWordSpec with Matchers {
 
-  "Doubles and Triples" ignore {
+  "Doubles and Triples" should {
     "be zero for a string containing no duplicates" in {
 
       val input = "abcdef"
@@ -51,27 +51,27 @@ class ChecksumSpec extends AnyWordSpec with Matchers {
 
   }
 
-  "Checksum" ignore {
+  "Checksum" should {
     "correctly calculate a checksum" in {
       val input = Seq("abcdef","bababc", "abbcde","abcccd","aabcdd","abcdee","ababab")
       Checksum.checksum(input) shouldBe 12
     }
   }
 
-  "hamming distance" ignore {
+  "hamming distance" should {
     "return an edit position" in  {
       Checksum.hammingDistance("abcde","axcye") shouldBe Seq(1,3)
     }
   }
 
-  "which boxes differ by one edit" ignore {
+  "which boxes differ by one edit" should {
     "return the boxes that differ by only one edit" in {
       val input = Seq("abcde","fghij","klmno","pqrst","fguij","axcye","wvxyz")
       Checksum.whichBoxesDifferByOneEdit(input) shouldBe Seq(("fghij","fguij"))
     }
   }
 
-  "boxes with edited name" ignore {
+  "boxes with edited name" should {
     "return the corrected name with edit removed" in {
       val input = Seq(("fghij","fguij"))
       Checksum.boxesWithEditedName(input) shouldBe Seq("fgij")

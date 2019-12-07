@@ -23,7 +23,7 @@ class Day01Spec extends AnyWordSpec with Matchers{
     }
   }
 
-  "Calulating the total fuel all in" should {
+  "Calculating the total fuel all in" should {
     "calculate for 1969" in {
       Year2019.Day01.totalFuelAllIn(1969) shouldBe 966
     }

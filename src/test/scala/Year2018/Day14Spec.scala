@@ -5,7 +5,7 @@ import org.scalatest.matchers.should.Matchers
 
 class Day14Spec extends AnyWordSpec with Matchers {
 
-  "Generate new recipies" ignore {
+  "Generate new recipies" should {
     "create 1 new recipe when there is only 1 digit" in {
       val recipeScoreBoard = "23"
       val elfPosition1 = 0
@@ -23,7 +23,7 @@ class Day14Spec extends AnyWordSpec with Matchers {
     }
   }
 
-  "Moving Elves" ignore {
+  "Moving Elves" should {
     "move elves by the score of their recipe" in {
       val recipeScoreBoard = "37"
       val elfPosition1 = 0
@@ -34,7 +34,7 @@ class Day14Spec extends AnyWordSpec with Matchers {
     }
   }
 
-  "NextStep" ignore {
+  "NextStep" should {
     "evolve the score board and advance the elves" in {
       val recipeScoreBoard = "3710"
       val elfPosition1 = 0
@@ -84,7 +84,7 @@ class Day14Spec extends AnyWordSpec with Matchers {
     }
   }
 
-  "FirstAppearance" ignore {
+  "FirstAppearance" should {
     "find correct match after 9" in {
       val recipeScoreBoard = "37"
       val elfPosition1 = 0

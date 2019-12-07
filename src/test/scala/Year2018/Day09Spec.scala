@@ -6,7 +6,7 @@ import org.scalatest.wordspec.AnyWordSpec
 
 class Day09Spec extends AnyWordSpec with Matchers {
 
-  "Circular Marble List" ignore {
+  "Circular Marble List" should {
     "move two and add the next marble" in {
       val data = CircularMarbleList(0, List(0,2,1,3), 9, 3, 4, List())
       val result = CircularMarbleList(2, List(0,4,2,1,3), 9, 4, 5, List())

@@ -22,7 +22,7 @@ object Day05_02 extends App {
   })
 
 
-  println(incidences)
+  //println(incidences)
   println(s"unreactedwithblocker: ${incidences.toList.map(a => (a._1, unreactedWithBlocker(a._1))).sortBy(a => a._2)}")
 
   val replacedPolymers = incidences.toList.map(a => (a._1, replaceAndReactLength(a._1)))
@@ -64,7 +64,7 @@ object PolymerReactor {
 
     val reactedPolymer = filterByPairs(polymerChain.toList, List[Char]())
 
-    println(s"reactedPolymer length: ${reactedPolymer.length}")
+    //println(s"reactedPolymer length: ${reactedPolymer.length}")
 
     if(reactedPolymer == polymerChain){
       reactedPolymer.mkString

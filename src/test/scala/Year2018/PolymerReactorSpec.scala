@@ -5,8 +5,7 @@ import org.scalatest.wordspec.AnyWordSpec
 
 class PolymerReactorSpec extends AnyWordSpec with Matchers {
 
-  "PolymerReactor" ignore {
-
+  "PolymerReactor" should {
 
     "react to destroy each other" in {
        val polyString = "aA"
@@ -41,7 +40,7 @@ class PolymerReactorSpec extends AnyWordSpec with Matchers {
     }
   }
 
-  "areSameLetter" ignore {
+  "areSameLetter" should {
     "match letters which are the same but of a different case" in {
       PolymerReactor.areSameLetter('a', 'A') shouldBe true
     }

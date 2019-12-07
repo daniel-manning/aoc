@@ -32,7 +32,7 @@ class Day04Spec extends AnyWordSpec with Matchers {
     |[1518-11-05 00:55] wakes up""".stripMargin.split("\n").toList
 
 
-  "Guard Chooser" ignore {
+  "Guard Chooser" should {
     "marshall the data correctly" in {
 
       val marshalledDuties = Day04.marshallGuardDuty(schedule).sortBy(_.day)

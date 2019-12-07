@@ -24,7 +24,7 @@ class Day12Spec extends AnyWordSpec with Matchers {
     ("####.",'#')
   )
 
-  "Cellular Automata" ignore {
+  "Cellular Automata" should {
     "evolve a ruleset for one generation" in {
 
       //val result = "#...#....#.....#..#..#..#"

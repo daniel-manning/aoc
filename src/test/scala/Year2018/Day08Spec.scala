@@ -5,7 +5,7 @@ import org.scalatest.wordspec.AnyWordSpec
 
 class Day08Spec extends AnyWordSpec with Matchers {
 
-  "Marshaller" ignore {
+  "Marshaller" should {
     "marshall a childless node" in {
       val data = List(0, 3, 2, 2, 2)
       val result = Node(List(), List(2,2,2))

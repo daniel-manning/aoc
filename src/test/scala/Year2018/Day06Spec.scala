@@ -5,7 +5,7 @@ import org.scalatest.wordspec.AnyWordSpec
 
 class Day06Spec extends AnyWordSpec with Matchers {
 
-  "Distance" ignore {
+  "Distance" should {
     "find correct manhattan distance between two points" in {
       val pointOne = (1, 1)
       val pointTwo = (4, 5)
@@ -21,7 +21,7 @@ class Day06Spec extends AnyWordSpec with Matchers {
 
     "calculate claimed areas" in { 
       val targets = List((1, 1), (1, 6), (8, 3), (3, 4), (5, 5), (8, 9))
-      val answers = List((4, 17), (3, 9))
+      val answers = List((3, 9), (4, 17))
 
       Distance.calculateAreas(targets) shouldBe answers
     }

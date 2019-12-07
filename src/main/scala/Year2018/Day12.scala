@@ -33,7 +33,7 @@ object CellularAutomata {
   }
 
   def indexTheInitialState(initalState: String):List[Int] = {
-    println(s"state: ${initalState.zipWithIndex}")
+    //println(s"state: ${initalState.zipWithIndex}")
     initalState.zipWithIndex.filter(p => p._1 == '#').toList.map(_._2)
   }
 

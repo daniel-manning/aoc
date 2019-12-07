@@ -44,13 +44,13 @@ object RecipeList {
 
   def nextTenRecipes(initialState: (String, (Int, Int)), afterNoOfRecipes: Int):String =
     evolveState(initialState)
-      .dropWhile(l => {println(l._1.length); l._1.length < (afterNoOfRecipes + 10)})
+      .dropWhile(l => {/*println(l._1.length); */l._1.length < (afterNoOfRecipes + 10)})
       .next._1
       .slice(afterNoOfRecipes, afterNoOfRecipes + 10)
 
   def firstAppearance(initialState: (String, (Int, Int)), matchingString: String):Int =
     evolveState(initialState)
-      .dropWhile(l => {println(l._1.length); !l._1.contains(matchingString)})
+      .dropWhile(l => {/*println(l._1.length); */!l._1.contains(matchingString)})
       .next._1
       .indexOf(matchingString)
 }
