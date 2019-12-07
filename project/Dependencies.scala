@@ -1,5 +1,13 @@
 import sbt._
 
 object Dependencies {
-  lazy val scalaTest = "org.scalatest" %% "scalatest" % "3.1.0"
+ val compile = Seq(
+  )
+
+
+    val test = Seq(
+      "org.scalatest" %% "scalatest" % "3.1.0"
+    ).map( _ % "test")
+
+  val all = compile ++ test
 }
