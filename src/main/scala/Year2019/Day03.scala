@@ -59,7 +59,7 @@ case class Line(points: Seq[(Int, Int)]){
 
 object Line {
   def constructFromDirections(directions: String): Line = {
-    val commands: Seq[String] = directions.split(",")
+    val commands: Seq[String] = directions.split(",").toIndexedSeq
     commands.foldLeft(Line(Seq((0, 0)))){
       (line, command) => line.add(command)
     }

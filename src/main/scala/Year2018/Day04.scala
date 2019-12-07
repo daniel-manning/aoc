@@ -77,6 +77,7 @@ object Day04 {
     endResult.head.startTime
   }
 
+  @scala.annotation.tailrec
   def iterateIntervalIntersections(list:List[Interval]):List[Interval] = {
     if(list.size <= 1 || list.forall(_.isSinglePoint)){
       list.distinct
@@ -99,6 +100,7 @@ object Day04 {
      compare(intervals)
   }
 
+  @scala.annotation.tailrec
   def intersectInterval(intervalOne:Interval, intervalTwo:Interval):Option[Interval] = {
     if(intervalOne.startTime > intervalTwo.startTime) {
            intersectInterval(intervalTwo, intervalOne)

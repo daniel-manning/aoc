@@ -27,7 +27,7 @@ case class CircularMarbleList(pointer:Int, marbleList:List[Int], noOfPlayers:Int
                         playerScores )
   }
 
-  def circle(pos:Int):Int = if(pos.signum == -1) marbleList.length + pos else pos
+  def circle(pos:Int):Int = if(pos.sign == -1) marbleList.length + pos else pos
 
   def nextMarble:Int = marbleToPlace
 }

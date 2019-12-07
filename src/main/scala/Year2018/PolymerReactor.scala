@@ -14,8 +14,8 @@ object Day05 extends App {
 object Day05_02 extends App {
   //val polymerChain = "dabCBAcaDA"
   val polymerChain = Source.fromResource("2018/day05_reduced").getLines.toList.head
-  val incidences = polymerChain.map(_.toLower).groupBy(identity).map(p => (p._1, p._2.length))
-  def unreactedWithBlocker(char:Char):Int = polymerChain.sliding(3).toList.count(a => a.toList match {
+  val incidences = polymerChain.map(_.toLower).toSeq.groupBy(identity).view.mapValues(_.unwrap).map(p => (p._1, p._2.length))
+  def unreactedWithBlocker(char:Char):Int = polymerChain.toSeq.sliding(3).map(_.unwrap).toList.count(a => a.toList match {
     case List(b, c, d) if c.toLower == char => PolymerReactor.areSameLetterButDifferentCase(b, d)
     case List(b, c, d) => false
     case _ => false

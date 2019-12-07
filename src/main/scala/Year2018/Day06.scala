@@ -28,8 +28,8 @@ object Day06_02 extends App{
 
 
 object Distance {
-  implicit class Crossable[X](xs: Traversable[X]) {
-    def cross[Y](ys: Traversable[Y]): Traversable[(X, Y)] = for {x <- xs; y <- ys } yield (x, y)
+  implicit class Crossable[X](xs: Iterable[X]) {
+    def cross[Y](ys: Iterable[Y]): Iterable[(X, Y)] = for {x <- xs; y <- ys } yield (x, y)
   }
 
   def manhattanDistance(pointOne:(Int, Int), pointTwo:(Int, Int)):Int = {

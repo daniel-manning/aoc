@@ -57,7 +57,7 @@ object Overlap {
     }else if(shapes.size == 1){
       List((multiplier, area(shapes.head)))
     }else{
-      (multiplier, shapes.map(area).sum) :: inclusionExclusion(compare(shapes), -1*multiplier)
+      (multiplier, shapes.map(area).iterator.sum) :: inclusionExclusion(compare(shapes), -1*multiplier)
     }
   }
 

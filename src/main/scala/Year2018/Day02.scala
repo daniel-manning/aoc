@@ -17,7 +17,7 @@ object Day02 extends App {
 object Checksum {
 
   def doublesAndTriples(input:String):(Int,Int) = {
-    val groupedLetters = input.groupBy(identity).map(_._2.length)
+    val groupedLetters = input.toSeq.groupBy(identity).view.mapValues(_.unwrap).map(_._2.length)
     val exactlyTwoLetters = groupedLetters.count(_ == 2)
     val exactlyThreeLetters = groupedLetters.count(_ == 3)
 
