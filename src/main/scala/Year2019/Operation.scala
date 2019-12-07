@@ -20,7 +20,9 @@ case class SumOperation(address1: Int, address2:Int, address3: Int, mask:Seq[Mod
   def run(programme: IntCodeProgramme):IntCodeProgramme = {
     IntCodeProgramme(programme.pointer + codeLength,
       programme.programme.updated(address3,
-        lookup(address1, mask(0), programme) + lookup(address2, mask(1), programme)))
+        lookup(address1, mask(0), programme) + lookup(address2, mask(1), programme)),
+      programme.inputStack,
+      programme.outputStack)
   }
 }
 
@@ -43,7 +45,9 @@ case class InputOperation(address: Int, mask:Seq[Mode]) extends Operation {
     val input: Int = programme.inputStack.pop()
 
     IntCodeProgramme(programme.pointer + codeLength,
-      programme.programme.updated(address, input)
+      programme.programme.updated(address, input),
+      programme.inputStack,
+      programme.outputStack
     )
   }
 }
