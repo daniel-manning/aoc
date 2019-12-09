@@ -42,6 +42,10 @@ case class InputOperation(address: Int, mask:Seq[Mode]) extends Operation {
 
   def run(programme: IntCodeProgramme):IntCodeProgramme = {
 
+    while(programme.inputStack.length < 1){
+
+    }
+
     val input: Int = programme.inputStack.pop()
 
     IntCodeProgramme(programme.pointer + codeLength,
