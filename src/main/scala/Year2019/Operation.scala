@@ -42,10 +42,12 @@ case class InputOperation(address: Int, mask:Seq[Mode]) extends Operation {
 
   def run(programme: IntCodeProgramme):IntCodeProgramme = {
 
+    println("Waiting for Input!")
     while(programme.inputStack.length < 1){
 
     }
 
+    println("Getting Input!")
     val input: Int = programme.inputStack.pop()
 
     IntCodeProgramme(programme.pointer + codeLength,

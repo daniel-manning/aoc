@@ -1,6 +1,7 @@
 package Year2019
 
 import scala.collection.mutable
+import scala.concurrent.{ExecutionContext, Future}
 import scala.io.Source
 
 object Day07 extends App {
@@ -42,7 +43,7 @@ object Amplifiers {
      }
 
 
-  def runJerryRiggedAmplifiers(settings: Seq[Int], amplifierSourceCode: Vector[Int]): Int = {
+  def runJerryRiggedAmplifiers(settings: Seq[Int], amplifierSourceCode: Vector[Int])(implicit ex: ExecutionContext): Future[Int] = {
     val link1 = new mutable.Stack[Int]()
     val link2 = new mutable.Stack[Int]()
     val link3 = new mutable.Stack[Int]()
@@ -74,6 +75,12 @@ object Amplifiers {
       outputStack = link1)
 
     //Evaluate each computer in a separate Thread
-    ???
+    val ex1 = Future { computerOne.runProgramme()}
+    val ex2 = Future { computerTwo.runProgramme()}
+    val ex3 = Future { computerThree.runProgramme()}
+    val ex4 = Future { computerFour.runProgramme()}
+    val ex5 = Future { computerFive.runProgramme()}
+
+    ex5.map(_.outputStack.head)
   }
 }

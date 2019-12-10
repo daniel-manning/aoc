@@ -1,9 +1,13 @@
 package Year2019
 
+import org.scalatest.concurrent.ScalaFutures
 import org.scalatest.matchers.should.Matchers
+import org.scalatest.time.{Millis, Seconds, Span}
 import org.scalatest.wordspec.AnyWordSpec
 
-class Day07Spec extends AnyWordSpec with Matchers {
+import scala.concurrent.ExecutionContext.Implicits.global
+
+class Day07Spec extends AnyWordSpec with Matchers with ScalaFutures {
 
   "Run Amplifiers" should {
     "give the correct output for the given settings" in {
@@ -28,9 +32,23 @@ class Day07Spec extends AnyWordSpec with Matchers {
 
       Amplifiers.runAmplifiers(amplifierSettings, programmeCode) shouldBe 65210
     }
+  }
 
+  "Run Jerry Rigged Amplifiers" should {
+    "give the correct output for test case 1" in {
+      //implicit val defaultPatience: PatienceConfig =
+      //PatienceConfig(timeout = Span(20, Seconds), interval = Span(5, Millis))
 
+      val programmeCode = Vector(
+        3, 26, 1001, 26, -4, 26, 3, 27, 1002, 27, 2, 27, 1, 27, 26,
+        27, 4, 27, 1001, 28, -1, 28, 1005, 28, 6, 99, 0, 0, 5)
+      val amplifierSettings = Seq(9, 8, 7, 6, 5)
+      val futureOutput = Amplifiers.runJerryRiggedAmplifiers(amplifierSettings, programmeCode)
 
+      whenReady(futureOutput, timeout(Span(600, Seconds))) {
+        output => output shouldBe 139629729
+      }
+    }
   }
 
 }
