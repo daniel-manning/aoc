@@ -16,17 +16,17 @@ object Day05 extends App {
 
   val diagnosticProgramme = IntCodeProgramme(
     programme = diagnosticProgrammeSource,
-    inputStack = new mutable.Stack().push(1))
+    inputQueue = new mutable.Queue().enqueue(1))
   val endProgramme = diagnosticProgramme.runProgramme()
 
   println("Part 1: Finished running diagnostics: Output ....")
-  endProgramme.outputStack.foreach(println)
+  endProgramme.outputQueue.foreach(println)
 
   val diagnosticThermalProgramme = IntCodeProgramme(
     programme = diagnosticProgrammeSource,
-    inputStack = new mutable.Stack().push(5))
+    inputQueue = new mutable.Queue().enqueue(5))
   val endThermalProgramme = diagnosticThermalProgramme.runProgramme()
   println("Part 2: Finished running diagnostics: Output ....")
-  endThermalProgramme.outputStack.foreach(println)
+  endThermalProgramme.outputQueue.foreach(println)
 
 }

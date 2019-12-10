@@ -3,7 +3,7 @@ package Year2019
 sealed trait Operation {
   val codeLength:Int
 
-  def run(programme: IntCodeProgramme):IntCodeProgramme
+  def run(programme: IntCodeProgramme)(implicit label:String):IntCodeProgramme
 
   def lookup(address: Int, mode: Mode, programme: IntCodeProgramme): Int =
     mode match {
@@ -17,43 +17,43 @@ case class SumOperation(address1: Int, address2:Int, address3: Int, mask:Seq[Mod
   val codeLength = 4
 
 
-  def run(programme: IntCodeProgramme):IntCodeProgramme = {
+  def run(programme: IntCodeProgramme)(implicit label:String):IntCodeProgramme = {
     IntCodeProgramme(programme.pointer + codeLength,
       programme.programme.updated(address3,
         lookup(address1, mask(0), programme) + lookup(address2, mask(1), programme)),
-      programme.inputStack,
-      programme.outputStack)
+      programme.inputQueue,
+      programme.outputQueue)
   }
 }
 
 case class MultiplyOperation(address1: Int, address2:Int, address3: Int, mask:Seq[Mode]) extends Operation {
   val codeLength = 4
-  def run(programme: IntCodeProgramme):IntCodeProgramme = {
+  def run(programme: IntCodeProgramme)(implicit label:String):IntCodeProgramme = {
     IntCodeProgramme(programme.pointer + codeLength,
       programme.programme.updated(address3,
         lookup(address1, mask(0), programme) * lookup(address2, mask(1), programme)),
-      programme.inputStack,
-      programme.outputStack)
+      programme.inputQueue,
+      programme.outputQueue)
   }
 }
 
 case class InputOperation(address: Int, mask:Seq[Mode]) extends Operation {
   val codeLength = 2
 
-  def run(programme: IntCodeProgramme):IntCodeProgramme = {
+  def run(programme: IntCodeProgramme)(implicit label:String):IntCodeProgramme = {
 
-    println("Waiting for Input!")
-    while(programme.inputStack.length < 1){
+    println(s"$label - Waiting for Input!")
+    while(programme.inputQueue.length < 1){
 
     }
 
-    println("Getting Input!")
-    val input: Int = programme.inputStack.pop()
+    val input: Int = programme.inputQueue.dequeue()
+    println(s"$label - Getting Input! - $input")
 
     IntCodeProgramme(programme.pointer + codeLength,
       programme.programme.updated(address, input),
-      programme.inputStack,
-      programme.outputStack
+      programme.inputQueue,
+      programme.outputQueue
     )
   }
 }
@@ -62,21 +62,22 @@ case class OutputOperation(address: Int, mask:Seq[Mode]) extends Operation {
   val codeLength = 2
 
 
-  def run(programme: IntCodeProgramme):IntCodeProgramme = {
+  def run(programme: IntCodeProgramme)(implicit label:String):IntCodeProgramme = {
 
     val output: Int = lookup(address, mask(0), programme)
+    println(s"$label - writing $output to the output channel")
 
     IntCodeProgramme(programme.pointer + codeLength,
       programme.programme,
-      programme.inputStack,
-      programme.outputStack.push(output))
+      programme.inputQueue,
+      programme.outputQueue.enqueue(output))
   }
 }
 
 case class JumpIfTrueOperation(address1: Int, address2:Int, mask:Seq[Mode]) extends Operation {
   val codeLength = 3
 
-  def run(programme: IntCodeProgramme):IntCodeProgramme ={
+  def run(programme: IntCodeProgramme)(implicit label:String):IntCodeProgramme ={
     if(lookup(address1, mask(0), programme) > 0){
       programme.copy(pointer = lookup(address2, mask(1), programme))
     } else {
@@ -88,7 +89,7 @@ case class JumpIfTrueOperation(address1: Int, address2:Int, mask:Seq[Mode]) exte
 case class JumpIfFalseOperation(address1: Int, address2:Int, mask:Seq[Mode]) extends Operation {
   val codeLength = 3
 
-  def run(programme: IntCodeProgramme):IntCodeProgramme ={
+  def run(programme: IntCodeProgramme)(implicit label:String):IntCodeProgramme ={
     if(lookup(address1, mask(0), programme) == 0){
       programme.copy(pointer = lookup(address2, mask(1), programme))
     } else {
@@ -100,7 +101,7 @@ case class JumpIfFalseOperation(address1: Int, address2:Int, mask:Seq[Mode]) ext
 case class LessThanOperation(address1: Int, address2:Int, address3:Int, mask:Seq[Mode]) extends Operation {
   val codeLength = 4
 
-  def run(programme: IntCodeProgramme):IntCodeProgramme ={
+  def run(programme: IntCodeProgramme)(implicit label:String):IntCodeProgramme ={
     val updateValue = if(lookup(address1, mask(0), programme) < lookup(address2, mask(1), programme)){
       1
     } else {
@@ -109,8 +110,8 @@ case class LessThanOperation(address1: Int, address2:Int, address3:Int, mask:Seq
 
     IntCodeProgramme(programme.pointer + codeLength,
       programme.programme.updated(address3, updateValue),
-      programme.inputStack,
-      programme.outputStack)
+      programme.inputQueue,
+      programme.outputQueue)
   }
 
 }
@@ -118,7 +119,7 @@ case class LessThanOperation(address1: Int, address2:Int, address3:Int, mask:Seq
 case class EqualOperation(address1: Int, address2:Int, address3:Int, mask:Seq[Mode]) extends Operation {
   val codeLength = 4
 
-  def run(programme: IntCodeProgramme):IntCodeProgramme ={
+  def run(programme: IntCodeProgramme)(implicit label:String):IntCodeProgramme ={
     val updateValue = if(lookup(address1, mask(0), programme) == lookup(address2, mask(1), programme)){
       1
     } else {
@@ -127,13 +128,13 @@ case class EqualOperation(address1: Int, address2:Int, address3:Int, mask:Seq[Mo
 
     IntCodeProgramme(programme.pointer + codeLength,
       programme.programme.updated(address3, updateValue),
-      programme.inputStack,
-      programme.outputStack)
+      programme.inputQueue,
+      programme.outputQueue)
   }
 
 }
 
 case object ExitOperation extends Operation {
   val codeLength = 1
-  def run(programme: IntCodeProgramme):IntCodeProgramme = programme
+  def run(programme: IntCodeProgramme)(implicit label:String):IntCodeProgramme = programme
 }
