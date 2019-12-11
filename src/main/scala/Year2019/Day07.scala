@@ -3,8 +3,10 @@ package Year2019
 import java.util.concurrent.Executors
 
 import scala.collection.mutable
-import scala.concurrent.{ExecutionContext, Future}
+import scala.concurrent.duration._
+import scala.concurrent.{Await, ExecutionContext, Future}
 import scala.io.Source
+import scala.language.postfixOps
 
 object Day07 extends App {
 
@@ -27,6 +29,12 @@ object Day07 extends App {
 
   val allPossibleJerryRiggedSettings = (5 to 9).permutations.toList
 
+  val things = allPossibleJerryRiggedSettings.map(settings => Amplifiers.runJerryRiggedAmplifiers(settings, amplifierSourceCode))
+  val outputsFuture = Future.sequence(things)
+
+  val output = Await.result(outputsFuture, 4 minutes)
+
+  println(s"Maximum output for all jerry rigged settings: ${output.max}")
 }
 
 object Amplifiers {
