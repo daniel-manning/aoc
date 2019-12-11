@@ -1,15 +1,20 @@
 package Year2019
 
+import java.util.concurrent.Executors
+
 import org.scalatest.concurrent.ScalaFutures
 import org.scalatest.matchers.should.Matchers
 import org.scalatest.time.{Millis, Seconds, Span}
 import org.scalatest.wordspec.AnyWordSpec
 
-import scala.concurrent.ExecutionContext.Implicits.global
+import scala.concurrent.{ExecutionContext, ExecutionContextExecutorService}
 
 class Day07Spec extends AnyWordSpec with Matchers with ScalaFutures {
 
-  "Run Amplifiers" ignore {
+  //Need a Threadpool 5 or greater
+  implicit val ec: ExecutionContextExecutorService = ExecutionContext.fromExecutorService(Executors.newWorkStealingPool(8))
+
+  "Run Amplifiers" should {
     "give the correct output for the given settings" in {
       val programmeCode = Vector(3,15,3,16,1002,16,10,16,1,16,15,15,4,15,99,0,0)
       val amplifierSettings = Seq(4,3,2,1,0)
@@ -35,7 +40,7 @@ class Day07Spec extends AnyWordSpec with Matchers with ScalaFutures {
   }
 
   "Run Jerry Rigged Amplifiers" should {
-    "give the correct output for test case 1" ignore {
+    "give the correct output for test case 1" in {
       val programmeCode = Vector(
         3, 26, 1001, 26, -4, 26, 3, 27, 1002, 27, 2, 27, 1, 27, 26,
         27, 4, 27, 1001, 28, -1, 28, 1005, 28, 6, 99, 0, 0, 5)
@@ -55,7 +60,7 @@ class Day07Spec extends AnyWordSpec with Matchers with ScalaFutures {
       val amplifierSettings = Seq(9,7,8,5,6)
       val futureOutput = Amplifiers.runJerryRiggedAmplifiers(amplifierSettings, programmeCode)
 
-      whenReady(futureOutput, timeout(Span(600, Seconds))) {
+      whenReady(futureOutput, timeout(Span(60, Seconds))) {
         output => output shouldBe 18216
       }
     }

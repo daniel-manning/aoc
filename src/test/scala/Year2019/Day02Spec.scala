@@ -10,21 +10,21 @@ class Day02Spec extends AnyWordSpec with Matchers{
     "edit in place it's code values" in {
       val startingProgramme = IntCodeProgramme(programme = Vector(1,9,10,3,2,3,11,0,99,30,40,50))
       val op = startingProgramme.nextOperation()
-      val alteredProgramme = op.run(startingProgramme)("")
+      val alteredProgramme = op.run(startingProgramme)(RunningSettings("", debugOutput = false))
       alteredProgramme shouldBe IntCodeProgramme(4, programme = Vector(1,9,10,70,2,3,11,0,99,30,40,50))
     }
 
     "start at a separate starting place for the next opcode" in {
       val startingProgramme = IntCodeProgramme(4, Vector(1,9,10,70,2,3,11,0,99,30,40,50))
       val op = startingProgramme.nextOperation()
-      val alteredProgramme = op.run(startingProgramme)("")
+      val alteredProgramme = op.run(startingProgramme)(RunningSettings("", debugOutput = false))
       alteredProgramme shouldBe IntCodeProgramme(8, programme = Vector(3500,9,10,70,2,3,11,0,99,30,40,50))
     }
 
     "end when it hits the end opcode" in {
       val startingProgramme = IntCodeProgramme(8, Vector(3500,9,10,70,2,3,11,0,99,30,40,50))
       val op = startingProgramme.nextOperation()
-      val alteredProgramme = op.run(startingProgramme)("")
+      val alteredProgramme = op.run(startingProgramme)(RunningSettings("", debugOutput = false))
       alteredProgramme shouldBe IntCodeProgramme(8, programme = Vector(3500,9,10,70,2,3,11,0,99,30,40,50))
     }
   }

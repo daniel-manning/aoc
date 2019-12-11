@@ -1,11 +1,15 @@
 package Year2019
 
+import java.util.concurrent.Executors
+
 import scala.collection.mutable
 import scala.concurrent.{ExecutionContext, Future}
 import scala.io.Source
-import scala.concurrent.ExecutionContext.Implicits.global
 
 object Day07 extends App {
+
+  //Need a threadpool greater than 5
+  implicit val ec = ExecutionContext.fromExecutorService(Executors.newWorkStealingPool(8))
 
   val amplifierSourceCode = Source.fromResource("2019/day07")
     .getLines()
@@ -22,13 +26,6 @@ object Day07 extends App {
   println(s"Maximum output for all settings is: ${amplifierOutput.max}")
 
   val allPossibleJerryRiggedSettings = (5 to 9).permutations.toList
-
-  val amplifierOutputJerryRigged = allPossibleJerryRiggedSettings.map(settings => Amplifiers.runJerryRiggedAmplifiers(settings, amplifierSourceCode))
-
-  val outputsOfJerryRigging: Future[List[Int]] = Future.sequence(amplifierOutputJerryRigged)
-
-  outputsOfJerryRigging.map(_.max).onComplete(x => println(s"Maximum output for all jerry rigged settings is: $x"))
-
 
 }
 
@@ -53,7 +50,7 @@ object Amplifiers {
      }
 
 
-  def runJerryRiggedAmplifiers(settings: Seq[Int], amplifierSourceCode: Vector[Int]): Future[Int] = {
+  def runJerryRiggedAmplifiers(settings: Seq[Int], amplifierSourceCode: Vector[Int])(implicit ec: ExecutionContext): Future[Int] = {
     val link1 = new mutable.Queue[Int]()
     val link2 = new mutable.Queue[Int]()
     val link3 = new mutable.Queue[Int]()
@@ -88,12 +85,14 @@ object Amplifiers {
       outputQueue = link1)
 
     //Evaluate each computer in a separate Thread
-    val ex1 = Future { computerOne.runProgramme()("AmplifierOne")}
-    val ex2 = Future { computerTwo.runProgramme()("AmplifierTwo")}
-    val ex3 = Future { computerThree.runProgramme()("AmplifierThree")}
-    val ex4 = Future { computerFour.runProgramme()("AmplifierFour")}
-    val ex5 = Future { computerFive.runProgramme()("AmplifierFive")}
+    val ex1 = Future { computerOne.runProgramme()(RunningSettings("AmplifierOne", debugOutput = false))}
+    val ex2 = Future { computerTwo.runProgramme()(RunningSettings("AmplifierTwo", debugOutput = false))}
+    val ex3 = Future { computerThree.runProgramme()(RunningSettings("AmplifierThree", debugOutput = false))}
+    val ex4 = Future { computerFour.runProgramme()(RunningSettings("AmplifierFour", debugOutput = false))}
+    val ex5 = Future { computerFive.runProgramme()(RunningSettings("AmplifierFive", debugOutput = false))}
 
-    ex5.map(_.outputQueue.head)
+    val futures = Future.sequence(Seq(ex1, ex2, ex3, ex4, ex5))
+
+    futures.map(_(4).outputQueue.head)
   }
 }

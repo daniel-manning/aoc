@@ -23,16 +23,20 @@ case class IntCodeProgramme(pointer: Int = 0,
     }
   }
 
-  def runProgramme()(implicit label:String = ""): IntCodeProgramme =
-    LazyList.unfold(this){
-      p => val op = p.nextOperation()
-            val nextProgramme = op.run(p)
+  def runProgramme()(implicit settings: RunningSettings = RunningSettings("", debugOutput = false)): IntCodeProgramme = {
+    if(settings.debugOutput) println(s"${settings.label} - Starting programme!")
+
+    LazyList.unfold(this) {
+      p =>
+        val op = p.nextOperation()
+        val nextProgramme = op.run(p)
 
         op match {
           case ExitOperation => None
           case _ => Some((nextProgramme, nextProgramme))
         }
     }.last
+  }
 }
 
 object IntCodeProgramme {
@@ -47,3 +51,5 @@ object IntCodeProgramme {
     (opCode, Seq(firstMode, secondMode, thirdMode))
   }
 }
+
+case class RunningSettings(label: String, debugOutput: Boolean)
