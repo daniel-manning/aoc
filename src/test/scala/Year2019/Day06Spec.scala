@@ -3,8 +3,6 @@ package Year2019
 import org.scalatest.matchers.should.Matchers
 import org.scalatest.wordspec.AnyWordSpec
 
-import scala.collection.mutable
-
 class Day06Spec extends AnyWordSpec with Matchers {
 
   val testOrbitList = List("COM)B","B)C","C)D","D)E","E)F","B)G","G)H","D)I","E)J","J)K","K)L")
