@@ -1,7 +1,7 @@
 package Year2019
 
-import org.scalatest.wordspec.AnyWordSpec
 import org.scalatest.matchers.should.Matchers
+import org.scalatest.wordspec.AnyWordSpec
 
 class Day01Spec extends AnyWordSpec with Matchers{
 
