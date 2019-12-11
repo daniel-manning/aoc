@@ -33,18 +33,18 @@ class IntCodeProgrammeSpec extends AnyWordSpec with Matchers {
   "position mode equal to" should {
     "compare input to 8 and output 1 for true" in {
       val startProgramme = IntCodeProgramme(programme = Vector(3,9,8,9,10,9,4,9,99,-1,8),
-        inputStack = new mutable.Stack().push(8))
+        inputQueue = new mutable.Queue().enqueue(8))
       val endProgramme = startProgramme.runProgramme()
 
-      endProgramme.outputStack.popAll() shouldBe Seq(1)
+      endProgramme.outputQueue.dequeueAll(_ => true) shouldBe Seq(1)
     }
 
     "compare input to 8 and output 0 for false" in {
       val startProgramme = IntCodeProgramme(programme = Vector(3,9,8,9,10,9,4,9,99,-1,8),
-        inputStack = new mutable.Stack().push(7))
+        inputQueue = new mutable.Queue().enqueue(7))
       val endProgramme = startProgramme.runProgramme()
 
-      endProgramme.outputStack.popAll() shouldBe Seq(0)
+      endProgramme.outputQueue.dequeueAll(_ => true) shouldBe Seq(0)
 
     }
   }
@@ -52,90 +52,90 @@ class IntCodeProgrammeSpec extends AnyWordSpec with Matchers {
   "position mode less than" should {
     "compare input to 8 and output 1 for true" in {
       val startProgramme = IntCodeProgramme(programme = Vector(3,9,7,9,10,9,4,9,99,-1,8),
-        inputStack = new mutable.Stack().push(7))
+        inputQueue = new mutable.Queue().enqueue(7))
       val endProgramme = startProgramme.runProgramme()
 
-      endProgramme.outputStack.popAll() shouldBe Seq(1)
+      endProgramme.outputQueue.dequeueAll(_ => true) shouldBe Seq(1)
     }
 
     "compare input to 8 and output 0 for false" in {
       val startProgramme = IntCodeProgramme(programme = Vector(3,9,7,9,10,9,4,9,99,-1,8),
-        inputStack = new mutable.Stack().push(10))
+        inputQueue = new mutable.Queue().enqueue(10))
       val endProgramme = startProgramme.runProgramme()
 
-      endProgramme.outputStack.popAll() shouldBe Seq(0)
+      endProgramme.outputQueue.dequeueAll(_ => true) shouldBe Seq(0)
     }
   }
 
   "immediate mode equal to" should {
     "compare input to 8 and output 1 for true" in {
       val startProgramme = IntCodeProgramme(programme = Vector(3,3,1108,-1,8,3,4,3,99),
-        inputStack = new mutable.Stack().push(8))
+        inputQueue = new mutable.Queue().enqueue(8))
       val endProgramme = startProgramme.runProgramme()
 
-      endProgramme.outputStack.popAll() shouldBe Seq(1)
+      endProgramme.outputQueue.dequeueAll(_ => true) shouldBe Seq(1)
     }
 
     "compare input to 8 and output 0 for false" in {
       val startProgramme = IntCodeProgramme(programme = Vector(3,3,1108,-1,8,3,4,3,99),
-        inputStack = new mutable.Stack().push(7))
+        inputQueue = new mutable.Queue().enqueue(7))
       val endProgramme = startProgramme.runProgramme()
 
-      endProgramme.outputStack.popAll() shouldBe Seq(0)
+      endProgramme.outputQueue.dequeueAll(_ => true) shouldBe Seq(0)
     }
   }
 
   "immediate mode less than" should {
     "compare input to 8 and output 1 for true" in {
       val startProgramme = IntCodeProgramme(programme = Vector(3,3,1107,-1,8,3,4,3,99),
-        inputStack = new mutable.Stack().push(7))
+        inputQueue = new mutable.Queue().enqueue(7))
       val endProgramme = startProgramme.runProgramme()
 
-      endProgramme.outputStack.popAll() shouldBe Seq(1)
+      endProgramme.outputQueue.dequeueAll(_ => true) shouldBe Seq(1)
     }
 
     "compare input to 8 and output 0 for false" in {
       val startProgramme = IntCodeProgramme(programme = Vector(3,3,1107,-1,8,3,4,3,99),
-        inputStack = new mutable.Stack().push(10))
+        inputQueue = new mutable.Queue().enqueue(10))
       val endProgramme = startProgramme.runProgramme()
 
-      endProgramme.outputStack.popAll() shouldBe Seq(0)
+      endProgramme.outputQueue.dequeueAll(_ => true) shouldBe Seq(0)
     }
   }
 
   "position mode jump test" should {
     "output zero if input is zero" in {
       val startProgramme = IntCodeProgramme(programme = Vector(3,12,6, 12, 15, 1, 13, 14, 13, 4, 13, 99, -1, 0, 1, 9),
-        inputStack = new mutable.Stack().push(0))
+        inputQueue = new mutable.Queue().enqueue(0))
       val endProgramme = startProgramme.runProgramme()
 
-      endProgramme.outputStack.popAll() shouldBe Seq(0)
+      endProgramme.outputQueue.dequeueAll(_ => true) shouldBe Seq(0)
     }
 
     "output 1 if greater than zero" in {
       val startProgramme = IntCodeProgramme(programme = Vector(3, 12, 6, 12, 15, 1, 13, 14, 13, 4, 13, 99, -1, 0, 1, 9),
-        inputStack = new mutable.Stack().push(10))
+        inputQueue = new mutable.Queue().enqueue(10))
       val endProgramme = startProgramme.runProgramme()
 
-      endProgramme.outputStack.popAll() shouldBe Seq(1)
+      endProgramme.outputQueue.dequeueAll(_ => true) shouldBe Seq(1)
     }
   }
 
   "immediate mode jump test" should {
     "output zero if input is zero" in {
       val startProgramme = IntCodeProgramme(programme = Vector(3,3,1105,-1,9,1101,0,0,12,4,12,99,1),
-        inputStack = new mutable.Stack().push(0))
+        inputQueue = new mutable.Queue().enqueue(0))
       val endProgramme = startProgramme.runProgramme()
 
-      endProgramme.outputStack.popAll() shouldBe Seq(0)
+      endProgramme.outputQueue.dequeueAll(_ => true) shouldBe Seq(0)
     }
 
     "output 1 if greater than zero" in {
       val startProgramme = IntCodeProgramme(programme = Vector(3,3,1105,-1,9,1101,0,0,12,4,12,99,1),
-        inputStack = new mutable.Stack().push(10))
+        inputQueue = new mutable.Queue().enqueue(10))
       val endProgramme = startProgramme.runProgramme()
 
-      endProgramme.outputStack.popAll() shouldBe Seq(1)
+      endProgramme.outputQueue.dequeueAll(_ => true) shouldBe Seq(1)
     }
   }
 
@@ -146,26 +146,26 @@ class IntCodeProgrammeSpec extends AnyWordSpec with Matchers {
 
     "output 999 if the input value is below 8" in {
       val startProgramme = IntCodeProgramme(programme = programme,
-        inputStack = new mutable.Stack().push(1))
+        inputQueue = new mutable.Queue().enqueue(1))
       val endProgramme = startProgramme.runProgramme()
 
-      endProgramme.outputStack.popAll() shouldBe Seq(999)
+      endProgramme.outputQueue.dequeueAll(_ => true) shouldBe Seq(999)
     }
 
     "output 1000 if the input value is equal to 8" in {
       val startProgramme = IntCodeProgramme(programme = programme,
-        inputStack = new mutable.Stack().push(8))
+        inputQueue = new mutable.Queue().enqueue(8))
       val endProgramme = startProgramme.runProgramme()
 
-      endProgramme.outputStack.popAll() shouldBe Seq(1000)
+      endProgramme.outputQueue.dequeueAll(_ => true) shouldBe Seq(1000)
     }
 
     "output 1001 if the input value is greater than 8" in {
       val startProgramme = IntCodeProgramme(programme = programme,
-        inputStack = new mutable.Stack().push(9))
+        inputQueue = new mutable.Queue().enqueue(9))
       val endProgramme = startProgramme.runProgramme()
 
-      endProgramme.outputStack.popAll() shouldBe Seq(1001)
+      endProgramme.outputQueue.dequeueAll(_ => true) shouldBe Seq(1001)
     }
   }
 

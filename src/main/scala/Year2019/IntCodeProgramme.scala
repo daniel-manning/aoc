@@ -4,8 +4,8 @@ import scala.collection.mutable
 
 case class IntCodeProgramme(pointer: Int = 0,
                             programme: Vector[Int],
-                            inputStack:mutable.Stack[Int] = new mutable.Stack[Int](),
-                            outputStack:mutable.Stack[Int] = new mutable.Stack[Int]()
+                            inputQueue:mutable.Queue[Int] = new mutable.Queue[Int](),
+                            outputQueue:mutable.Queue[Int] = new mutable.Queue[Int]()
                            ){
   def nextOperation(): Operation = {
     val OpCodeWithMask = IntCodeProgramme.parseOpCode(programme(pointer))
@@ -23,16 +23,20 @@ case class IntCodeProgramme(pointer: Int = 0,
     }
   }
 
-  def runProgramme(): IntCodeProgramme =
-    LazyList.unfold(this){
-      p => val op = p.nextOperation()
-            val nextProgramme = op.run(p)
+  def runProgramme()(implicit settings: RunningSettings = RunningSettings("", debugOutput = false)): IntCodeProgramme = {
+    if(settings.debugOutput) println(s"${settings.label} - Starting programme!")
+
+    LazyList.unfold(this) {
+      p =>
+        val op = p.nextOperation()
+        val nextProgramme = op.run(p)
 
         op match {
           case ExitOperation => None
           case _ => Some((nextProgramme, nextProgramme))
         }
     }.last
+  }
 }
 
 object IntCodeProgramme {
@@ -47,3 +51,5 @@ object IntCodeProgramme {
     (opCode, Seq(firstMode, secondMode, thirdMode))
   }
 }
+
+case class RunningSettings(label: String, debugOutput: Boolean)
