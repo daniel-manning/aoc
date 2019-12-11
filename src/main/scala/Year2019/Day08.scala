@@ -47,7 +47,7 @@ case class RenderedImage(pixels:Seq[Seq[Colour]]){
 
   def printOut(): Unit =
     pixels.foreach { l =>
-      println(s"${l.map(printColour)}")
+      println(s"${l.map(printColour).mkString}")
     }
 }
 case class SpaceImageLayer(pixels:Seq[Seq[Int]]) {
