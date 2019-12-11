@@ -2,6 +2,8 @@ package Year2019
 
 import java.util.concurrent.Executors
 
+import Year2019.ProgrammeOperations.vectorProgrammeToMap
+
 import scala.collection.mutable
 import scala.concurrent.duration._
 import scala.concurrent.{Await, ExecutionContext, Future}
@@ -19,7 +21,7 @@ object Day07 extends App {
     .head
     .split(",")
     .toVector
-    .map(_.toInt)
+    .map(n => BigInt(n.toInt))
 
   val allPossibleSettings = (0 to 4).permutations.toList
 
@@ -39,14 +41,14 @@ object Day07 extends App {
 
 object Amplifiers {
 
-  def runAmplifiers(settings: Seq[Int], programmeCode:Vector[Int]):Int =
-    settings.foldLeft(0){
+  def runAmplifiers(settings: Seq[Int], programmeCode:Vector[BigInt]): BigInt =
+    settings.foldLeft(BigInt(0)){
        (previousOutput, setting) =>
 
-         val inputChannel = new mutable.Queue[Int]().enqueue(setting, previousOutput)
+         val inputChannel = new mutable.Queue[BigInt]().enqueue(setting, previousOutput)
 
          val amplifierProgramme = IntCodeProgramme(
-           programme = programmeCode,
+           programme = vectorProgrammeToMap(programmeCode),
            inputQueue = inputChannel
          )
 
@@ -58,12 +60,13 @@ object Amplifiers {
      }
 
 
-  def runJerryRiggedAmplifiers(settings: Seq[Int], amplifierSourceCode: Vector[Int])(implicit ec: ExecutionContext): Future[Int] = {
-    val link1 = new mutable.Queue[Int]()
-    val link2 = new mutable.Queue[Int]()
-    val link3 = new mutable.Queue[Int]()
-    val link4 = new mutable.Queue[Int]()
-    val link5 = new mutable.Queue[Int]()
+  def runJerryRiggedAmplifiers(settings: Seq[Int], amplifierSourceCode: Vector[BigInt])(implicit ec: ExecutionContext): Future[BigInt] = {
+
+    val link1 = new mutable.Queue[BigInt]()
+    val link2 = new mutable.Queue[BigInt]()
+    val link3 = new mutable.Queue[BigInt]()
+    val link4 = new mutable.Queue[BigInt]()
+    val link5 = new mutable.Queue[BigInt]()
 
     //provide Settings
     link1.enqueue(settings(0))
@@ -76,19 +79,19 @@ object Amplifiers {
     link1.enqueue(0)
 
     //setup computers
-    val computerOne = IntCodeProgramme(programme = amplifierSourceCode,
+    val computerOne = IntCodeProgramme(programme = vectorProgrammeToMap(amplifierSourceCode),
       inputQueue = link1,
       outputQueue = link2)
-    val computerTwo = IntCodeProgramme(programme = amplifierSourceCode,
+    val computerTwo = IntCodeProgramme(programme = vectorProgrammeToMap(amplifierSourceCode),
       inputQueue = link2,
       outputQueue = link3)
-    val computerThree = IntCodeProgramme(programme = amplifierSourceCode,
+    val computerThree = IntCodeProgramme(programme = vectorProgrammeToMap(amplifierSourceCode),
       inputQueue = link3,
       outputQueue = link4)
-    val computerFour = IntCodeProgramme(programme = amplifierSourceCode,
+    val computerFour = IntCodeProgramme(programme = vectorProgrammeToMap(amplifierSourceCode),
       inputQueue = link4,
       outputQueue = link5)
-    val computerFive = IntCodeProgramme(programme = amplifierSourceCode,
+    val computerFive = IntCodeProgramme(programme = vectorProgrammeToMap(amplifierSourceCode),
       inputQueue = link5,
       outputQueue = link1)
 

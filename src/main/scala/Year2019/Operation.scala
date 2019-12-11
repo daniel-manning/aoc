@@ -5,10 +5,11 @@ sealed trait Operation {
 
   def run(programme: IntCodeProgramme)(implicit settings: RunningSettings): IntCodeProgramme
 
-  def lookup(address: Int, mode: Mode, programme: IntCodeProgramme): Int =
+  def lookup(address: BigInt, mode: Mode, programme: IntCodeProgramme): BigInt =
     mode match {
-      case PositionMode => programme.programme(address)
+      case PositionMode => programme.programme.getOrElse(address, 0)
       case ImmediateMode => address
+      case RelativeMode => programme.programme.getOrElse(address + programme.relativeBase, 0)
     }
 
   def debugLog(message: String)(implicit settings: RunningSettings): Unit =
@@ -16,7 +17,7 @@ sealed trait Operation {
 
 }
 
-case class SumOperation(address1: Int, address2:Int, address3: Int, mask:Seq[Mode]) extends Operation {
+case class SumOperation(address1: BigInt, address2:BigInt, address3: BigInt, mask:Seq[Mode]) extends Operation {
   val codeLength = 4
 
 
@@ -24,28 +25,28 @@ case class SumOperation(address1: Int, address2:Int, address3: Int, mask:Seq[Mod
     val sumValues = lookup(address1, mask(0), programme) + lookup(address2, mask(1), programme)
     debugLog(s"Writing sum value $sumValues to location $address3")
 
-    IntCodeProgramme(programme.pointer + codeLength,
-      programme.programme.updated(address3, sumValues),
-      programme.inputQueue,
-      programme.outputQueue)
+    programme.copy(
+      pointer = programme.pointer + codeLength,
+      programme = programme.programme.updated(address3, sumValues)
+    )
   }
 }
 
-case class MultiplyOperation(address1: Int, address2:Int, address3: Int, mask:Seq[Mode]) extends Operation {
+case class MultiplyOperation(address1: BigInt, address2:BigInt, address3: BigInt, mask:Seq[Mode]) extends Operation {
   val codeLength = 4
 
   def run(programme: IntCodeProgramme)(implicit settings: RunningSettings): IntCodeProgramme = {
     val multiplyValues = lookup(address1, mask(0), programme) * lookup(address2, mask(1), programme)
     debugLog(s"Writing sum value $multiplyValues to location $address3")
 
-    IntCodeProgramme(programme.pointer + codeLength,
-      programme.programme.updated(address3, multiplyValues),
-      programme.inputQueue,
-      programme.outputQueue)
+    programme.copy(
+      pointer = programme.pointer + codeLength,
+      programme =  programme.programme.updated(address3, multiplyValues)
+    )
   }
 }
 
-case class InputOperation(address: Int, mask:Seq[Mode]) extends Operation {
+case class InputOperation(address: BigInt, mask:Seq[Mode]) extends Operation {
   val codeLength = 2
 
   def run(programme: IntCodeProgramme)(implicit settings: RunningSettings): IntCodeProgramme = {
@@ -55,34 +56,33 @@ case class InputOperation(address: Int, mask:Seq[Mode]) extends Operation {
       Thread.sleep(5)
     }
 
-    val input: Int = programme.inputQueue.dequeue()
+    val input: BigInt = programme.inputQueue.dequeue()
     debugLog(s"Getting Input! - $input")
 
-    IntCodeProgramme(programme.pointer + codeLength,
-      programme.programme.updated(address, input),
-      programme.inputQueue,
-      programme.outputQueue
+    programme.copy(
+      pointer = programme.pointer + codeLength,
+      programme = programme.programme.updated(address, input)
     )
   }
 }
 
-case class OutputOperation(address: Int, mask:Seq[Mode]) extends Operation {
+case class OutputOperation(address: BigInt, mask:Seq[Mode]) extends Operation {
   val codeLength = 2
 
 
   def run(programme: IntCodeProgramme)(implicit settings: RunningSettings): IntCodeProgramme = {
 
-    val output: Int = lookup(address, mask(0), programme)
+    val output: BigInt = lookup(address, mask(0), programme)
     debugLog(s"writing $output to the output channel")
 
-    IntCodeProgramme(programme.pointer + codeLength,
-      programme.programme,
-      programme.inputQueue,
-      programme.outputQueue.enqueue(output))
+    programme.copy(
+      pointer = programme.pointer + codeLength,
+      outputQueue = programme.outputQueue.enqueue(output)
+    )
   }
 }
 
-case class JumpIfTrueOperation(address1: Int, address2:Int, mask:Seq[Mode]) extends Operation {
+case class JumpIfTrueOperation(address1: BigInt, address2:BigInt, mask:Seq[Mode]) extends Operation {
   val codeLength = 3
 
   def run(programme: IntCodeProgramme)(implicit settings: RunningSettings): IntCodeProgramme ={
@@ -99,7 +99,7 @@ case class JumpIfTrueOperation(address1: Int, address2:Int, mask:Seq[Mode]) exte
   }
 }
 
-case class JumpIfFalseOperation(address1: Int, address2:Int, mask:Seq[Mode]) extends Operation {
+case class JumpIfFalseOperation(address1: BigInt, address2:BigInt, mask:Seq[Mode]) extends Operation {
   val codeLength = 3
 
   def run(programme: IntCodeProgramme)(implicit settings: RunningSettings):IntCodeProgramme ={
@@ -116,7 +116,7 @@ case class JumpIfFalseOperation(address1: Int, address2:Int, mask:Seq[Mode]) ext
   }
 }
 
-case class LessThanOperation(address1: Int, address2:Int, address3:Int, mask:Seq[Mode]) extends Operation {
+case class LessThanOperation(address1: BigInt, address2:BigInt, address3:BigInt, mask:Seq[Mode]) extends Operation {
   val codeLength = 4
 
   def run(programme: IntCodeProgramme)(implicit settings: RunningSettings):IntCodeProgramme ={
@@ -130,15 +130,15 @@ case class LessThanOperation(address1: Int, address2:Int, address3:Int, mask:Seq
     }
 
     debugLog(s"lto: updating location $address3 with value $updateValue")
-    IntCodeProgramme(programme.pointer + codeLength,
-      programme.programme.updated(address3, updateValue),
-      programme.inputQueue,
-      programme.outputQueue)
-  }
 
+    programme.copy(
+      pointer = programme.pointer + codeLength,
+      programme = programme.programme.updated(address3, updateValue)
+    )
+  }
 }
 
-case class EqualOperation(address1: Int, address2:Int, address3:Int, mask:Seq[Mode]) extends Operation {
+case class EqualOperation(address1: BigInt, address2:BigInt, address3:BigInt, mask:Seq[Mode]) extends Operation {
   val codeLength = 4
 
   def run(programme: IntCodeProgramme)(implicit settings: RunningSettings):IntCodeProgramme = {
@@ -152,12 +152,27 @@ case class EqualOperation(address1: Int, address2:Int, address3:Int, mask:Seq[Mo
     }
 
     debugLog(s"eo: updating location $address3 with value $updateValue")
-    IntCodeProgramme(programme.pointer + codeLength,
-      programme.programme.updated(address3, updateValue),
-      programme.inputQueue,
-      programme.outputQueue)
-  }
 
+    programme.copy(
+      pointer = programme.pointer + codeLength,
+      programme = programme.programme.updated(address3, updateValue)
+    )
+  }
+}
+
+case class AdjustRelativeBaseOperation(address1: BigInt, mask:Seq[Mode]) extends Operation {
+  val codeLength = 2
+
+  def run(programme: IntCodeProgramme)(implicit settings: RunningSettings):IntCodeProgramme = {
+    val addressValue = lookup(address1, mask(0), programme)
+
+    debugLog(s"adjust relative base: changing relative base by $addressValue")
+
+    programme.copy(
+      pointer = programme.pointer + codeLength,
+      relativeBase = programme.relativeBase + addressValue
+    )
+  }
 }
 
 case object ExitOperation extends Operation {
