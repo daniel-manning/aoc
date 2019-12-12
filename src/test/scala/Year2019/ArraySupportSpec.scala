@@ -12,6 +12,12 @@ class ArraySupportSpec extends AnyWordSpec with Matchers {
 
       ArraySupport.reconstructArray(sequence) shouldBe result
     }
+
+    "construct position map from array of sequences" in {
+      val sequence = Seq(Seq(0,2), Seq(2,2))
+      val result = Seq((Position(0,0),0),(Position(1,0),2),(Position(0,1),2),(Position(1,1),2))
+      ArraySupport.sequenceArrayToPositionSeq(sequence)(identity) shouldBe result
+    }
   }
 
 }
