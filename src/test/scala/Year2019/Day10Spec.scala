@@ -118,6 +118,22 @@ class Day10Spec extends AnyWordSpec with Matchers {
       val field = AsteroidField.construct(testField.split("\n"))
       field.findBestPositionForAsteroidBase shouldBe (Position(11,13), 210)
     }
+
+    "correctly identify asteroids blasted by one revolution of laser cannon" ignore {
+      val testField = """.#....#####...#..
+                        |##...##.#####..##
+                        |##...#...#.#####.
+                        |..#.....#...###..
+                        |..#.#.....#....##""".stripMargin
+
+      val result = Seq(
+        (Position(8,1),1), (Position(9,0),2), (Position(9,1),3), (Position(10,0),4),
+        (Position(9,2),5), (Position(11,1),6), (Position(12,1),7), (Position(11,2),8),
+        (Position(14,1),9))
+
+      val field = AsteroidField.construct(testField.split("\n"))
+      field.oneRevolutionOfLaserBlaster(Position(8,3)) shouldBe result
+    }
   }
 
 
