@@ -28,31 +28,6 @@ object Space {
     }
 }
 
-case class Rational(num: Int, denom: Int){
-  def isInteger: Boolean = denom == 1
-
-  def lowestTerms: Rational = {
-    val multiplier = denom.sign.toInt
-    val gcd = BigInt(num).gcd(denom).toInt
-
-    Rational(multiplier * num / gcd, multiplier * denom / gcd)
-  }
-
-  def +(that: Rational): Rational =
-    Rational(this.num*that.denom + that.num*this.denom, this.denom*that.denom).lowestTerms
-
-  def *(that: Rational): Rational =
-    Rational(this.num*that.num, this.denom*that.denom).lowestTerms
-
-  def floor: Int = Math.floor(num.toDouble / denom).toInt
-
-  def toBigDecimal: BigDecimal = if(denom != 0){ BigDecimal(num)/BigDecimal(denom) } else { BigDecimal(num.sign * Double.MaxValue) }
-}
-
-object Rational {
-  implicit def fromInt(value: Int): Rational = Rational(value, 1)
-}
-
 case class AsteroidField(field: Map[Position, Space]){
 
   def noOfAsteroidsVisibleFromPosition(base: Position): Int = {
@@ -69,15 +44,15 @@ case class AsteroidField(field: Map[Position, Space]){
     }
   }
 
-  def isAsteroidVisible(base: Position, asteroid: Position): Boolean = {
+  def isAsteroidVisible(base: Position, asteroid: Position, asteroids: Seq[Position] = field.keys.toSeq): Boolean = {
     if (base == asteroid) {
       false
     } else if (base.x == asteroid.x) {
       val yRange = rangeFromOneObjectToOther(base, asteroid)(_.y)
-      !yRange.exists(y => field.contains(Position(base.x, y)))
+      !yRange.exists(y => asteroids.contains(Position(base.x, y)))
     } else if (base.y == asteroid.y) {
       val xRange: Range = rangeFromOneObjectToOther(base, asteroid)(_.x)
-      !xRange.exists(x => field.contains(Position(x, base.y)))
+      !xRange.exists(x => asteroids.contains(Position(x, base.y)))
     } else {
       val gradient = Rational(base.y - asteroid.y, base.x - asteroid.x)
 
@@ -87,20 +62,35 @@ case class AsteroidField(field: Map[Position, Space]){
         val y = gradient * (x - base.x) + base.y
 
         if (y.isInteger) {
-          field.contains(Position(x, y.num))
+          asteroids.contains(Position(x, y.num))
         } else false
       }
     }
   }
 
-  def oneRevolutionOfLaserBlaster(base:Position): Seq[(Position, Int)] =
-    field
-      .keys.toSeq
-      .filter(asteroid => isAsteroidVisible(base, asteroid))
-      .map(asteroid => (asteroid, Rational(base.y - asteroid.y, base.x - asteroid.x).lowestTerms))
-      .sortBy(l => Math.atan(l._2.toBigDecimal.toDouble))
+  def oneRevolutionOfLaserBlaster(base:Position, asteroids:Seq[Position] = field.keys.toSeq): Seq[(Position, Int)] =
+    asteroids
+      .filter(asteroid => isAsteroidVisible(base, asteroid, asteroids))
+      .map(asteroid => (asteroid, TwoVector(asteroid.x - base.x, asteroid.y - base.y)))
+      .sortBy(l => TwoVector.calculateAngle(l._2, TwoVector(0, -1)))
       .zipWithIndex
       .map(l => (l._1._1, l._2 + 1))
+
+  def removeAsteroidsWithLaserBlaster(base:Position): Seq[(Position, Int)] = {
+    Seq.unfold((field.keys.toSeq, 0)){
+      a =>
+        val blastedAsteroids = oneRevolutionOfLaserBlaster(base, a._1).map(l => (l._1, l._2 + a._2))
+
+        val asteroidsLeft =  a._1.toSet.diff(blastedAsteroids.map(_._1).toSet).toSeq
+
+        //println(s"blastedAsteroids: $blastedAsteroids")
+        //println(s"asteroidsLeft: $asteroidsLeft")
+
+        if(a._1.length > 1) Some((blastedAsteroids, (asteroidsLeft, blastedAsteroids.last._2)))
+        else None
+    }.flatten
+  }
+
 
   def scorePositionsForAsteroidBase: Seq[(Position, Int)] =
     field.toSeq.sortBy(l => (l._1.x, l._1.y)).map(p => (p._1, noOfAsteroidsVisibleFromPosition(p._1)))
