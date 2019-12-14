@@ -14,30 +14,27 @@ class Day10Spec extends AnyWordSpec with Matchers {
 
   "AsteroidField" should {
     "construct from String" in {
-      val result = Map(
-        Position(1,0) -> Asteroid, Position(4,0) -> Asteroid,
-        Position(0,2) -> Asteroid, Position(1,2) -> Asteroid, Position(2,2) -> Asteroid, Position(3,2) -> Asteroid, Position(4,2) -> Asteroid,
-        Position(4,3) -> Asteroid,
-        Position(3,4) -> Asteroid, Position(4,4) -> Asteroid
+      val result = Seq(
+        Position(2,2), Position(4,4), Position(4,0), Position(1,0), Position(0,2), Position(1,2), Position(4,3), Position(3,2), Position(4,2), Position(3,4)
       )
 
-      AsteroidField.construct(fieldString.split("\n")) shouldBe AsteroidField(result)
+      AsteroidField.construct(fieldString.split("\n").toIndexedSeq) shouldBe AsteroidField(result)
     }
 
     "be able to calculate the asteroids visible from" in {
-      val field = AsteroidField.construct(fieldString.split("\n"))
+      val field = AsteroidField.construct(fieldString.split("\n").toIndexedSeq)
       field.noOfAsteroidsVisibleFromPosition(Position(3,4)) shouldBe 8
     }
 
     "be able to correctly score positions for asteroid base" in {
       val result = Seq((Position(0,2),6), (Position(1,0),7), (Position(1,2),7), (Position(2,2),7), (Position(3,2),7),
         (Position(3,4),8), (Position(4,0),7), (Position(4,2),5), (Position(4,3),7), (Position(4,4),7))
-      val field = AsteroidField.construct(fieldString.split("\n"))
+      val field = AsteroidField.construct(fieldString.split("\n").toIndexedSeq)
       field.scorePositionsForAsteroidBase shouldBe result
     }
 
     "be able to find the best position for asteroid base" in {
-      val field = AsteroidField.construct(fieldString.split("\n"))
+      val field = AsteroidField.construct(fieldString.split("\n").toIndexedSeq)
       field.findBestPositionForAsteroidBase shouldBe (Position(3,4), 8)
     }
 
@@ -54,7 +51,7 @@ class Day10Spec extends AnyWordSpec with Matchers {
             |##...#..#.
             |.#....####""".stripMargin
 
-      val field = AsteroidField.construct(testField.split("\n"))
+      val field = AsteroidField.construct(testField.split("\n").toIndexedSeq)
       field.findBestPositionForAsteroidBase shouldBe (Position(5,8), 33)
     }
 
@@ -71,7 +68,7 @@ class Day10Spec extends AnyWordSpec with Matchers {
           |......#...
           |.####.###.""".stripMargin
 
-      val field = AsteroidField.construct(testField.split("\n"))
+      val field = AsteroidField.construct(testField.split("\n").toIndexedSeq)
       field.findBestPositionForAsteroidBase shouldBe (Position(1,2), 35)
     }
 
@@ -88,7 +85,7 @@ class Day10Spec extends AnyWordSpec with Matchers {
           |.##...##.#
           |.....#.#..""".stripMargin
 
-      val field = AsteroidField.construct(testField.split("\n"))
+      val field = AsteroidField.construct(testField.split("\n").toIndexedSeq)
       field.findBestPositionForAsteroidBase shouldBe (Position(6,3), 41)
     }
 
@@ -115,7 +112,7 @@ class Day10Spec extends AnyWordSpec with Matchers {
           |#.#.#.#####.####.###
           |###.##.####.##.#..##""".stripMargin
 
-      val field = AsteroidField.construct(testField.split("\n"))
+      val field = AsteroidField.construct(testField.split("\n").toIndexedSeq)
       field.findBestPositionForAsteroidBase shouldBe (Position(11,13), 210)
     }
 
@@ -137,17 +134,11 @@ class Day10Spec extends AnyWordSpec with Matchers {
         (Position(6,0),29), (Position(7,0),30)
       )
 
-      val field = AsteroidField.construct(testField.split("\n"))
+      val field = AsteroidField.construct(testField.split("\n").toIndexedSeq)
       field.oneRevolutionOfLaserBlaster(Position(8,3)) shouldBe result
     }
 
     "correctly identify asteroids blasted by second revolution of laser cannon" in {
-      val testField = """.#....#####...#..
-                        |##...##.#####..##
-                        |##...#...#.#####.
-                        |..#.....#...###..
-                        |..#.#.....#....##""".stripMargin
-
       val result = Seq(
         (Position(8,0),1), (Position(10,1),2),
         (Position(14,0),3), (Position(16,1),4), (Position(13,3),5)
@@ -158,8 +149,7 @@ class Day10Spec extends AnyWordSpec with Matchers {
         Position(14,0), Position(16,1), Position(13,3), Position(14,3)
       )
 
-      val field = AsteroidField.construct(testField.split("\n"))
-      field.oneRevolutionOfLaserBlaster(Position(8,3), leftOver) shouldBe result
+     AsteroidField(leftOver).oneRevolutionOfLaserBlaster(Position(8,3)) shouldBe result
     }
 
     "correctly identify order of all asteroids blasted" in {
@@ -181,8 +171,8 @@ class Day10Spec extends AnyWordSpec with Matchers {
         (Position(14,0),33), (Position(16,1),34), (Position(13,3),35), (Position(14,3),36)
       )
 
-      val field = AsteroidField.construct(testField.split("\n"))
-      field.removeAsteroidsWithLaserBlaster(Position(8,3)) shouldBe result
+      val field = AsteroidField.construct(testField.split("\n").toIndexedSeq)
+      AsteroidField.removeAsteroidsWithLaserBlaster(Position(8,3), field) shouldBe result
     }
 
 
@@ -209,8 +199,8 @@ class Day10Spec extends AnyWordSpec with Matchers {
           |#.#.#.#####.####.###
           |###.##.####.##.#..##""".stripMargin
 
-      val field = AsteroidField.construct(testField.split("\n"))
-      val blastingOrder = field.removeAsteroidsWithLaserBlaster(Position(11,13))
+      val field = AsteroidField.construct(testField.split("\n").toIndexedSeq)
+      val blastingOrder = AsteroidField.removeAsteroidsWithLaserBlaster(Position(11,13), field)
 
       blastingOrder(0)._1 shouldBe Position(11,12)
       blastingOrder(1)._1 shouldBe Position(12,1)

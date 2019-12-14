@@ -52,7 +52,8 @@ case class OrbitMap(orbits: Map[OrbitalObject, Set[OrbitalObject]]){
   def findPathToStartNode(begin: OrbitalObject):Seq[OrbitalObject] = {
     val startNode = findStartNode
 
-    def go(nextNode: OrbitalObject, path: Seq[OrbitalObject]):Seq[OrbitalObject] = {
+    @scala.annotation.tailrec
+    def go(nextNode: OrbitalObject, path: Seq[OrbitalObject]): Seq[OrbitalObject] = {
       if(nextNode == startNode) path
       else {
         val parent = orbits.filter(_._2 contains nextNode).head._1
