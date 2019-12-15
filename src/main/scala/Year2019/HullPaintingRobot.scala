@@ -1,5 +1,10 @@
 package Year2019
 
+import Year2019.ProgrammeOperations.vectorProgrammeToMap
+
+import scala.collection.mutable
+import scala.concurrent.{ExecutionContext, Future}
+
 sealed trait Direction
 case object LeftTurn extends Direction
 case object RightTurn extends Direction
@@ -11,32 +16,75 @@ object Direction {
   }
 }
 
-case class HullPaintingRobot(hullTiles:Map[Position, Colour], position: Position, intCodeProgramme: IntCodeProgramme){
+sealed trait Orientation
+case object North extends Orientation
+case object East extends Orientation
+case object West extends Orientation
+case object South extends Orientation
 
-  def readColour: Colour = hullTiles.getOrElse(position, Black)
+object Orientation {
 
-  def paintTile(colour: Colour): HullPaintingRobot =
-    this.copy(hullTiles = this.hullTiles.updated(position, colour))
+  def changeDirection(orientation: Orientation, direction: Direction): Orientation =
+    (orientation, direction) match {
+      case (North, RightTurn) => East
+      case (East, RightTurn) => South
+      case (South, RightTurn) => West
+      case (West, RightTurn) => North
+      case (North, LeftTurn) => West
+      case (East, LeftTurn) => North
+      case (South, LeftTurn) => East
+      case (West, LeftTurn) => South
+    }
 
-  def run = {
+}
+
+
+case class Queues(inputQueue:mutable.Queue[BigInt],
+                  outputQueue:mutable.Queue[BigInt])
+
+case class HullPaintingRobot(hullTiles:Map[Position, Colour], position: Position, orientation: Orientation){
+
+
+def readColour: Colour = hullTiles.getOrElse(position, Black)
+
+  def paintTile(colour: Colour): Map[Position, Colour] =
+    hullTiles.updated(position, colour)
+
+  def run(queues: Queues): HullPaintingRobot = {
     val inputColour = colourToOutput(readColour)
-    intCodeProgramme.inputQueue.enqueue(inputColour)
-    while(intCodeProgramme.outputQueue.length < 1){
+    queues.inputQueue.enqueue(inputColour)
+    while(queues.outputQueue.length < 1){
       Thread.sleep(10)
     }
 
-    val newColour = Colour(intCodeProgramme.outputQueue.dequeue().toInt)
-    paintTile(newColour)
+    val newColour = Colour(queues.outputQueue.dequeue().toInt)
+    val newTiles = paintTile(newColour)
 
-    while(intCodeProgramme.outputQueue.length < 1){
+    while(queues.outputQueue.length < 1){
       Thread.sleep(10)
     }
 
-    val turn = Direction(intCodeProgramme.outputQueue.dequeue().toInt)
+    val turn = Direction(queues.outputQueue.dequeue().toInt)
+    val (newPosition, newOrientation) = turnThenMove(turn)
 
+    HullPaintingRobot(newTiles, newPosition, newOrientation)
+  }
 
+  private def turnThenMove(turn:Direction): (Position, Orientation) = {
+    val newOrientation = Orientation.changeDirection(orientation, turn)
+    val newPosition = stepForward(newOrientation)
+
+    (newPosition, newOrientation)
 
   }
+
+  def stepForward(orientation: Orientation): Position =
+    orientation match {
+      case North => position.copy(y = position.y + 1)
+      case East => position.copy(x = position.x + 1)
+      case South => position.copy(y = position.y - 1)
+      case West => position.copy(x = position.x - 1)
+    }
 
   def colourToOutput(colour: Colour): Int = colour match {
     case Black => 0
@@ -44,3 +92,32 @@ case class HullPaintingRobot(hullTiles:Map[Position, Colour], position: Position
   }
 
 }
+
+object HullPaintingRobot {
+
+  def startPainting(sourceCode: Vector[BigInt], startingRobot: HullPaintingRobot)(implicit ec: ExecutionContext): LazyList[Position] = {
+
+    val queues = Queues(new mutable.Queue[BigInt](), new mutable.Queue[BigInt]())
+
+    val computerOne = IntCodeProgramme(programme = vectorProgrammeToMap(sourceCode),
+      inputQueue = queues.inputQueue,
+      outputQueue = queues.outputQueue)
+
+    val ex1 = Future { computerOne.runProgramme()(RunningSettings("HullPainter", debugOutput = false))}
+
+    LazyList.unfold(startingRobot){
+      robot =>
+
+        if(ex1.isCompleted) None
+        else {
+          println(s"Running robot position: ${robot.position}")
+          val newRobot = robot.run(queues)
+          //println(s"Robot tile map size: ${newRobot.hullTiles.size}")
+
+          Some((robot.position, newRobot))
+        }
+
+    }
+  }
+}
+
