@@ -119,5 +119,28 @@ object HullPaintingRobot {
 
     }
   }
-}
 
+  //functions for interactive mode with updated drawing
+  def startComputer(sourceCode: Vector[BigInt])(implicit ec: ExecutionContext): (Queues, Future[IntCodeProgramme]) = {
+    val queues = Queues(new mutable.Queue[BigInt](), new mutable.Queue[BigInt]())
+
+    val computerOne = IntCodeProgramme(programme = vectorProgrammeToMap(sourceCode),
+      inputQueue = queues.inputQueue,
+      outputQueue = queues.outputQueue)
+
+    val ex1 = Future { computerOne.runProgramme()(RunningSettings("HullPainter", debugOutput = false))}
+
+    (queues, ex1)
+  }
+
+
+  def interactivePainting(robot: HullPaintingRobot)(implicit queues: Queues, ex1: Future[IntCodeProgramme]): Option[HullPaintingRobot] = {
+      if(ex1.isCompleted) None
+      else {
+        println(s"Running robot position: ${robot.position}")
+        val newRobot = robot.run(queues)
+        //println(s"Robot tile map size: ${newRobot.hullTiles.size}")
+        Some(newRobot)
+      }
+    }
+}
