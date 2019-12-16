@@ -18,7 +18,7 @@ object Window extends SimpleSwingApplication {
     .toVector
     .map(BigInt(_))
 
-  var robot = HullPaintingRobot(Map.empty, Position(0,0), North)
+  var robot = HullPaintingRobot(Map(Position(0,0) -> White), Position(0,0), North)
 
   implicit val (queues, execution) = HullPaintingRobot.startComputer(sourceCode)
 
