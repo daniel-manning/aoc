@@ -50,7 +50,7 @@ object Window extends SimpleSwingApplication {
           case White => g.setColor(Color.white)
         }
 
-        g.fillRect(offsetX + location.x * width, offsetY + location.y * height, drawWidth, drawHeight)
+        g.fillRect(offsetX + location.x * width, offsetY - location.y * height, drawWidth, drawHeight)
       })
 
     }
