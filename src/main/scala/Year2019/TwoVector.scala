@@ -21,7 +21,10 @@ object TwoVector {
   }
 }
 
-case class ThreeVector(x:Int, y: Int, z: Int)
+case class ThreeVector(x:Int, y: Int, z: Int){
+  def +(that: ThreeVector): ThreeVector =
+    ThreeVector(this.x + that.x, this.y + that.y, this.z + that.z)
+}
 
 object ThreeVectorParser extends RegexParsers {
   def bracket: Parser[String]    = """[<>]+""".r ^^ { _.toString }
