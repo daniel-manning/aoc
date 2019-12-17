@@ -1,5 +1,8 @@
 package Year2019
 
+import Year2019.NBodySystem.areTwoBodiesTheSamePositionAndVelocityOnAxis
+import utils.LazyPrimeFactors
+
 import scala.io.Source
 
 object Day12 extends App {
@@ -14,6 +17,12 @@ object Day12 extends App {
     .totalEnergy
 
   println(s"Energy of the system after 1000 steps is $energyAfter1000Steps")
+
+  val cycleTimes = NBodySystem.returnTimeCycles(startingNBodySystem)
+  val returnTime = NBodySystem.returnTime(startingNBodySystem)
+
+  println(s"The return time cycles of the system is $cycleTimes")
+  println(s"The return time of the entire system is $returnTime")
 }
 
 case class SystemBody(label: String, position: ThreeVector, velocity: ThreeVector = ThreeVector(0, 0, 0)){
@@ -82,6 +91,57 @@ case class NBodySystem(system: Seq[SystemBody], timeStep: Int = 0) {
 }
 
 object NBodySystem {
+  def returnTimeCycles(startingNBodySystem: NBodySystem): (Option[Int], Option[Int], Option[Int]) = {
+    //All 3 coordinates are independent - find the cycles for each
+    //Full return time is the least common multiple
+    LazyList.unfold((1, (Option.empty[Int], Option.empty[Int], Option.empty[Int]), startingNBodySystem)) {
+      system =>
+        val (cycleOne, cycleTwo, cycleThree) = system._2
+        if (cycleOne.isDefined && cycleTwo.isDefined && cycleThree.isDefined) None
+        else {
+          val newSystem = system._3.applyGravity
+
+          val newCycleOne = returnTimeOfCycleOnAxis(cycleOne, system._1, startingNBodySystem, newSystem, (vector: ThreeVector) => vector.x)
+
+          val newCycleTwo = returnTimeOfCycleOnAxis(cycleTwo, system._1, startingNBodySystem, newSystem, (vector: ThreeVector) => vector.y)
+
+          val newCycleThree = returnTimeOfCycleOnAxis(cycleThree, system._1, startingNBodySystem, newSystem, (vector: ThreeVector) => vector.z)
+
+          Some(((newCycleOne, newCycleTwo, newCycleThree), (system._1 + 1, (newCycleOne, newCycleTwo, newCycleThree), newSystem)))
+        }
+    }.last
+  }
+
+  def returnTime(startingNBodySystem: NBodySystem): BigInt = {
+    val (cycleOne, cycleTwo, cycleThree) = returnTimeCycles(startingNBodySystem) match {
+      case (Some(a), Some(b), Some(c)) => (BigInt(a), BigInt(b), BigInt(c))
+    }
+
+    val factorsOne = LazyPrimeFactors.factors(cycleOne)
+    val factorsTwo = LazyPrimeFactors.factors(cycleTwo)
+    val factorsThree = LazyPrimeFactors.factors(cycleThree)
+    val set = (factorsOne ++ factorsTwo ++ factorsThree).toSet.toSeq
+      .groupBy((p: (BigInt, Int)) => p._1).toSeq
+      .map(l => (l._1, l._2.max))
+
+    set.map(p => p._1.pow(p._2._2)).product
+  }
+
+  private def returnTimeOfCycleOnAxis(returnTime: Option[Int], currentTime: Int, nbodyOne: NBodySystem, nbodyTwo: NBodySystem, axisChoice: ThreeVector => Int): Option[Int] = {
+    val allBodiesAreTheSameOnTheAxis = (nbodyOne.system ++ nbodyTwo.system).groupBy(_.label).toSeq.forall{l => l._2 match {
+      case Seq(bodyOne, bodyTwo) => areTwoBodiesTheSamePositionAndVelocityOnAxis(bodyOne, bodyTwo, axisChoice)
+    }}
+
+    if(returnTime.isEmpty && allBodiesAreTheSameOnTheAxis){
+      Some(currentTime)
+    } else {
+      returnTime
+    }
+  }
+
+  private def areTwoBodiesTheSamePositionAndVelocityOnAxis(bodyOne: SystemBody, bodyTwo: SystemBody, axisChoice: ThreeVector => Int): Boolean =
+    axisChoice(bodyOne.position) == axisChoice(bodyTwo.position) && axisChoice(bodyOne.velocity) == axisChoice(bodyTwo.velocity)
+
   def evolveUntilTime(body: NBodySystem, untilTime: Int): NBodySystem = {
     LazyList.unfold(body) {
       system =>

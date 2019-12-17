@@ -225,4 +225,33 @@ class Day12Spec extends AnyWordSpec with Matchers {
       moon.totalEnergy shouldBe 36
     }
   }
+
+  "Return time" should {
+    "be calculated correctly for test case 1" in {
+      val input =
+        """<x=-1, y=0, z=2>
+          |<x=2, y=-10, z=-7>
+          |<x=4, y=-8, z=8>
+          |<x=3, y=5, z=-1>""".stripMargin
+
+      val bodies:Seq[ThreeVector] = input.split("\n").toList.map(s => ThreeVectorParser.parse(ThreeVectorParser.tvp, s).get)
+      val startingNBodySystem = NBodySystem(bodies.zipWithIndex.map(v => SystemBody(v._2.toString, v._1)))
+
+      NBodySystem.returnTimeCycles(startingNBodySystem) shouldBe (Some(18),Some(28),Some(44))
+      NBodySystem.returnTime(startingNBodySystem) shouldBe BigInt(2772)
+    }
+
+    "be calculated for test case 2" in {
+      val input =
+        """<x=-8, y=-10, z=0>
+          |<x=5, y=5, z=10>
+          |<x=2, y=-7, z=3>
+          |<x=9, y=-8, z=-3>""".stripMargin
+
+      val bodies:Seq[ThreeVector] = input.split("\n").toList.map(s => ThreeVectorParser.parse(ThreeVectorParser.tvp, s).get)
+      val startingNBodySystem = NBodySystem(bodies.zipWithIndex.map(v => SystemBody(v._2.toString, v._1)))
+
+      NBodySystem.returnTime(startingNBodySystem) shouldBe BigInt("4686774924")
+    }
+  }
 }
