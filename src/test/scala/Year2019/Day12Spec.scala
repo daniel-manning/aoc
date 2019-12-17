@@ -132,6 +132,42 @@ class Day12Spec extends AnyWordSpec with Matchers {
       NBodySystem.evolveUntilTime(system, 5) shouldBe result
     }
 
+    "evolve System six steps" in {
+      val system = NBodySystem(Seq(
+        SystemBody("a", ThreeVector(-1, 0, 2)),
+        SystemBody("b", ThreeVector(2, -10, -7)),
+        SystemBody("c", ThreeVector(4, -8, 8)),
+        SystemBody("d", ThreeVector(3, 5, -1))
+      ))
+
+      val result = NBodySystem(Seq(
+        SystemBody("a", ThreeVector(-1, -7, 3), ThreeVector(0, 2, 1)),
+        SystemBody("b", ThreeVector(3, 0, 0),   ThreeVector(-1, -1, -5)),
+        SystemBody("c", ThreeVector(3, -2, 1),  ThreeVector(1, -4, 5)),
+        SystemBody("d", ThreeVector(3, -4, -2), ThreeVector(0, 3, -1))
+      ), timeStep = 6)
+
+      NBodySystem.evolveUntilTime(system, 6) shouldBe result
+    }
+
+    "evolve System ten steps" in {
+      val system = NBodySystem(Seq(
+        SystemBody("a", ThreeVector(-1, 0, 2)),
+        SystemBody("b", ThreeVector(2, -10, -7)),
+        SystemBody("c", ThreeVector(4, -8, 8)),
+        SystemBody("d", ThreeVector(3, 5, -1))
+      ))
+
+      val result = NBodySystem(Seq(
+        SystemBody("a", ThreeVector(2, 1, -3), ThreeVector(-3, -2, 1)),
+        SystemBody("b", ThreeVector(1, -8, 0),   ThreeVector(-1, 1, 3)),
+        SystemBody("c", ThreeVector(3, -6, 1),  ThreeVector(3, 2, -3)),
+        SystemBody("d", ThreeVector(2, 0, 4), ThreeVector(1, -1, -1))
+      ), timeStep = 10)
+
+      NBodySystem.evolveUntilTime(system, 10) shouldBe result
+    }
+
     "have the correct kinetic and potential energies after 10 steps" in {
       val system = NBodySystem(Seq(
         SystemBody("a", ThreeVector(-1, 0, 2)),
@@ -141,9 +177,52 @@ class Day12Spec extends AnyWordSpec with Matchers {
       ))
 
       NBodySystem
-        .evolveUntilTime(system, 5)
+        .evolveUntilTime(system, 10)
         .system
         .map(b => (b.potentialEnergy, b.kineticEnergy)) shouldBe Seq((6,6),(9,5),(10,8),(6, 3))
+
+
+    }
+
+    "total the energy of the system correctly after 10 steps" in {
+      val system = NBodySystem(Seq(
+        SystemBody("a", ThreeVector(-1, 0, 2)),
+        SystemBody("b", ThreeVector(2, -10, -7)),
+        SystemBody("c", ThreeVector(4, -8, 8)),
+        SystemBody("d", ThreeVector(3, 5, -1))
+      ))
+
+      NBodySystem
+        .evolveUntilTime(system, 10)
+      .totalEnergy shouldBe 179
+    }
+
+    "total the energy correctly after 100 steps" in {
+      val system = NBodySystem(Seq(
+        SystemBody("a", ThreeVector(-8, -10, 0)),
+        SystemBody("b", ThreeVector(5, 5, 10)),
+        SystemBody("c", ThreeVector(2, -7, 3)),
+        SystemBody("d", ThreeVector(9, -8, -3))
+      ))
+
+      NBodySystem
+        .evolveUntilTime(system, 100)
+        .totalEnergy shouldBe 1940
+    }
+  }
+
+  "Energy calculations" should {
+    "be calculated correctly" in {
+      val moon = SystemBody("moon", ThreeVector(2, 1, 3), ThreeVector(-3, -2, 1))
+
+      moon.potentialEnergy  shouldBe 6
+      moon.kineticEnergy  shouldBe 6
+    }
+
+    "total correctly" in {
+      val moon = SystemBody("moon", ThreeVector(2, 1, 3), ThreeVector(-3, -2, 1))
+
+      moon.totalEnergy shouldBe 36
     }
   }
 }

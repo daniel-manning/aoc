@@ -9,6 +9,11 @@ object Day12 extends App {
     .map(s => ThreeVectorParser.parse(ThreeVectorParser.tvp, s).get)
 
   val startingNBodySystem = NBodySystem(vectors.zipWithIndex.map(v => SystemBody(v._2.toString, v._1)))
+
+  val energyAfter1000Steps = NBodySystem.evolveUntilTime(startingNBodySystem, 1000)
+    .totalEnergy
+
+  println(s"Energy of the system after 1000 steps is $energyAfter1000Steps")
 }
 
 case class SystemBody(label: String, position: ThreeVector, velocity: ThreeVector = ThreeVector(0, 0, 0)){
@@ -26,6 +31,8 @@ case class SystemBody(label: String, position: ThreeVector, velocity: ThreeVecto
 
   def kineticEnergy: Int =
     Math.abs(velocity.x) + Math.abs(velocity.y) + Math.abs(velocity.z)
+
+  def totalEnergy: Int = potentialEnergy * kineticEnergy
 }
 
 object SystemBody {
@@ -50,7 +57,6 @@ object SystemBody {
 case class NBodySystem(system: Seq[SystemBody], timeStep: Int = 0) {
   def applyGravity: NBodySystem = {
     val pairs = SeqOps.crossDifferentPairs(system)
-    println(pairs)
     val velocityUpdates: Map[String, ThreeVector] = pairs
       .map(p => SystemBody.considerPairs(p._1, p._2))
       .flatMap(p => Seq(p._1, p._2))
@@ -71,6 +77,8 @@ case class NBodySystem(system: Seq[SystemBody], timeStep: Int = 0) {
 
     NBodySystem(updatedBodies, timeStep + 1)
   }
+
+  def totalEnergy: Int = system.map(_.totalEnergy).sum
 }
 
 object NBodySystem {
