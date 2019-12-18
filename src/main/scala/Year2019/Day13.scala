@@ -3,11 +3,15 @@ package Year2019
 import java.awt.Color
 
 import Year2019.ProgrammeOperations.vectorProgrammeToMap
+import monix.reactive.Observable
 
 import scala.collection.mutable
 import scala.concurrent.Future
 import scala.io.Source
-import scala.concurrent.ExecutionContext.Implicits.global
+import monix.execution.Scheduler.Implicits.global
+
+import scala.concurrent.duration.{Duration, MILLISECONDS}
+import scala.math.BigInt
 import scala.swing.{Dimension, Graphics2D, MainFrame, Panel, SimpleSwingApplication}
 
 object Day13 extends SimpleSwingApplication {
@@ -22,7 +26,7 @@ object Day13 extends SimpleSwingApplication {
 
     implicit val (ex1, queues) = ArcadeCabinet.loadGame(sourceCode)
 
-  val tiles = ArcadeCabinet.grabFrame
+  var tiles = Seq.empty[Tile]
 
   println(s"There are ${tiles.count(t => t.isInstanceOf[Block])} block tiles")
 
@@ -70,6 +74,21 @@ object Day13 extends SimpleSwingApplication {
     contents = ui
   }
 
+  def repaint(): Unit = {
+    queues.outputQueue.enqueue(NeutralPosition.value)
+    queues.waitingForInputQueue.dequeueAll(_ => true)
+    tiles = ArcadeCabinet.grabFrame
+    ui.repaint()
+  }
+
+  ///////////////MONIX TASKS
+  val tick = {
+    Observable.interval(Duration(20, MILLISECONDS))
+      .map(x => repaint())
+  }
+
+  val cancelable = tick.subscribe()
+
 }
 
 
@@ -91,14 +110,28 @@ object Tile {
     }
 }
 
+sealed trait JoyStickMovement{
+  def value: Int
+}
+case object NeutralPosition extends JoyStickMovement {
+  val value = 0
+}
+case object LeftTiltedPosition extends JoyStickMovement{
+  val value = -1
+}
+case object RightTiltedPosition extends JoyStickMovement{
+  val value = 1
+}
+
 object ArcadeCabinet {
   def grabFrame(implicit ex1: Future[IntCodeProgramme], queues: Queues): Seq[Tile] = {
 
     //block thread until programme exits or waits for Input
-    while (!ex1.isCompleted || queues.waitingForInputQueue.nonEmpty) {
+    while (!ex1.isCompleted && queues.waitingForInputQueue.isEmpty) {
+      println(queues.outputQueue.length)
+      println(queues.waitingForInputQueue.length)
       Thread.sleep(20)
     }
-
 
     //remove any messages
     queues.waitingForInputQueue.dequeueAll(_ => true)
@@ -106,7 +139,15 @@ object ArcadeCabinet {
     //gather outputs
     val outputs = queues.outputQueue.dequeueAll(_ => true)
 
-    outputs.sliding(3, 3).map(l => Tile(l(0).toInt, l(1).toInt, l(2).toInt)).toSeq
+    val minusOne = BigInt(-1)
+    val zero = BigInt(0)
+    outputs.sliding(3, 3).map {
+      case Seq(`minusOne`, `zero`, score) => ??? //update the laser display board
+      case Seq(x, y, tileIdentifier) => {
+        println(s"Tile for ($x, $y, $tileIdentifier)")
+        Tile(x.toInt, y.toInt, tileIdentifier.toInt)
+      }
+    }.toSeq
   }
 
   def loadGame(sourceCode: Vector[BigInt]): (Future[IntCodeProgramme], Queues) = {
@@ -114,7 +155,8 @@ object ArcadeCabinet {
 
     val computerOne = IntCodeProgramme(programme = vectorProgrammeToMap(sourceCode),
       inputQueue = queues.inputQueue,
-      outputQueue = queues.outputQueue)
+      outputQueue = queues.outputQueue,
+      waitingForInputQueue = queues.waitingForInputQueue)
 
     val ex1 = Future { computerOne.runProgramme()(RunningSettings("ArcadeGame", debugOutput = false))}
 
