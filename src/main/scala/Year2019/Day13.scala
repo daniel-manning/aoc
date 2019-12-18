@@ -3,16 +3,18 @@ package Year2019
 import java.awt.Color
 
 import Year2019.ProgrammeOperations.vectorProgrammeToMap
+import monix.execution.Scheduler.Implicits.global
+import monix.reactive.Observable
 
 import scala.collection.mutable
 import scala.concurrent.Future
+import scala.concurrent.duration.{Duration, MILLISECONDS}
 import scala.io.Source
-import scala.concurrent.ExecutionContext.Implicits.global
 import scala.swing.{Dimension, Graphics2D, MainFrame, Panel, SimpleSwingApplication}
 
 object Day13 extends SimpleSwingApplication {
 
-  val sourceCode = Source.fromResource("2019/day13")
+  val sourceCode: Vector[BigInt] = Source.fromResource("2019/day13")
     .getLines()
     .toList
     .head
@@ -20,9 +22,9 @@ object Day13 extends SimpleSwingApplication {
     .toVector
     .map(BigInt(_))
 
-    implicit val (ex1, queues) = ArcadeCabinet.loadGame(sourceCode)
+  implicit val (ex1, queues) = ArcadeCabinet.loadGame(sourceCode)
 
-  val tiles = ArcadeCabinet.grabFrame
+  var tiles: Seq[Tile] = ArcadeCabinet.grabFrame
 
   println(s"There are ${tiles.count(t => t.isInstanceOf[Block])} block tiles")
 
@@ -40,11 +42,11 @@ object Day13 extends SimpleSwingApplication {
       val offsetX = 100
       val offsetY = 250
 
-      val width:Int = 10
-      val height:Int = 10
+      val width: Int = 10
+      val height: Int = 10
 
-      val drawWidth:Int = 9
-      val drawHeight:Int = 9
+      val drawWidth: Int = 9
+      val drawHeight: Int = 9
 
       tiles.foreach {
         case Wall(x, y) =>
@@ -70,18 +72,42 @@ object Day13 extends SimpleSwingApplication {
     contents = ui
   }
 
+  def repaint(): Unit = {
+    queues.inputQueue.enqueue(NeutralPosition.value)
+    queues.waitingForInputQueue.dequeueAll(_ => true)
+    val updateTiles = ArcadeCabinet.grabFrame
+    if(updateTiles.nonEmpty){
+      tiles = updateTiles
+      ui.repaint()
+    }
+  }
+
+  ///////////////MONIX TASKS
+  val tick = {
+    Observable.interval(Duration(20, MILLISECONDS))
+      .map(x => repaint())
+  }
+
+  val cancelable = tick.subscribe()
+
+
 }
 
 
 sealed trait Tile
+
 case class EmptyTile(x: Int, y: Int) extends Tile
+
 case class Wall(x: Int, y: Int) extends Tile
+
 case class Block(x: Int, y: Int) extends Tile
+
 case class HorizontalPaddle(x: Int, y: Int) extends Tile
+
 case class Ball(x: Int, y: Int) extends Tile
 
 object Tile {
-  def apply(x:Int, y:Int, tileIdentifier: Int): Tile =
+  def apply(x: Int, y: Int, tileIdentifier: Int): Tile =
     tileIdentifier match {
       case 0 => EmptyTile(x, y)
       case 1 => Wall(x, y)
@@ -91,11 +117,29 @@ object Tile {
     }
 }
 
+sealed trait JoyStickMovement {
+  def value: Int
+}
+
+case object NeutralPosition extends JoyStickMovement {
+  val value = 0
+}
+
+case object LeftTiltedPosition extends JoyStickMovement {
+  val value: Int = -1
+}
+
+case object RightTiltedPosition extends JoyStickMovement {
+  val value = 1
+}
+
 object ArcadeCabinet {
   def grabFrame(implicit ex1: Future[IntCodeProgramme], queues: Queues): Seq[Tile] = {
 
     //block thread until programme exits or waits for Input
-    while (!ex1.isCompleted || queues.waitingForInputQueue.nonEmpty) {
+    while (!ex1.isCompleted && queues.waitingForInputQueue.isEmpty) {
+      println(queues.outputQueue.length)
+      println(queues.waitingForInputQueue.length)
       Thread.sleep(20)
     }
 
@@ -105,6 +149,7 @@ object ArcadeCabinet {
 
     //gather outputs
     val outputs = queues.outputQueue.dequeueAll(_ => true)
+    //println(s"outputs: $outputs")
 
     outputs.sliding(3, 3).map(l => Tile(l(0).toInt, l(1).toInt, l(2).toInt)).toSeq
   }
@@ -114,9 +159,12 @@ object ArcadeCabinet {
 
     val computerOne = IntCodeProgramme(programme = vectorProgrammeToMap(sourceCode),
       inputQueue = queues.inputQueue,
-      outputQueue = queues.outputQueue)
+      outputQueue = queues.outputQueue,
+      waitingForInputQueue = queues.waitingForInputQueue)
 
-    val ex1 = Future { computerOne.runProgramme()(RunningSettings("ArcadeGame", debugOutput = false))}
+    val ex1 = Future {
+      computerOne.runProgramme()(RunningSettings("ArcadeGame", debugOutput = false))
+    }
 
     (ex1, queues)
   }
