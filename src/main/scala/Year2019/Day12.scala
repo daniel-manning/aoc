@@ -1,6 +1,5 @@
 package Year2019
 
-import Year2019.NBodySystem.areTwoBodiesTheSamePositionAndVelocityOnAxis
 import utils.LazyPrimeFactors
 
 import scala.io.Source
