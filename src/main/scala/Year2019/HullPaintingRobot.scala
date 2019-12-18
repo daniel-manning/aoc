@@ -39,8 +39,9 @@ object Orientation {
 }
 
 
-case class Queues(inputQueue:mutable.Queue[BigInt],
-                  outputQueue:mutable.Queue[BigInt])
+case class Queues(inputQueue: mutable.Queue[BigInt],
+                  outputQueue: mutable.Queue[BigInt],
+                  waitingForInputQueue: mutable.Queue[BigInt])
 
 case class HullPaintingRobot(hullTiles:Map[Position, Colour], position: Position, orientation: Orientation){
 
@@ -97,7 +98,7 @@ object HullPaintingRobot {
 
   def startPainting(sourceCode: Vector[BigInt], startingRobot: HullPaintingRobot)(implicit ec: ExecutionContext): LazyList[Position] = {
 
-    val queues = Queues(new mutable.Queue[BigInt](), new mutable.Queue[BigInt]())
+    val queues = Queues(new mutable.Queue[BigInt](), new mutable.Queue[BigInt](), new mutable.Queue[BigInt]())
 
     val computerOne = IntCodeProgramme(programme = vectorProgrammeToMap(sourceCode),
       inputQueue = queues.inputQueue,
@@ -122,7 +123,7 @@ object HullPaintingRobot {
 
   //functions for interactive mode with updated drawing
   def startComputer(sourceCode: Vector[BigInt])(implicit ec: ExecutionContext): (Queues, Future[IntCodeProgramme]) = {
-    val queues = Queues(new mutable.Queue[BigInt](), new mutable.Queue[BigInt]())
+    val queues = Queues(new mutable.Queue[BigInt](), new mutable.Queue[BigInt](), new mutable.Queue[BigInt]())
 
     val computerOne = IntCodeProgramme(programme = vectorProgrammeToMap(sourceCode),
       inputQueue = queues.inputQueue,

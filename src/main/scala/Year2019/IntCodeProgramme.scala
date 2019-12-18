@@ -6,7 +6,8 @@ case class IntCodeProgramme(pointer: BigInt = 0,
                             relativeBase: BigInt = 0,
                             programme: Map[BigInt, BigInt],
                             inputQueue:mutable.Queue[BigInt] = new mutable.Queue[BigInt](),
-                            outputQueue:mutable.Queue[BigInt] = new mutable.Queue[BigInt]()
+                            outputQueue:mutable.Queue[BigInt] = new mutable.Queue[BigInt](),
+                            waitingForInputQueue: mutable.Queue[BigInt] = new mutable.Queue[BigInt]()
                            ){
   def nextOperation(): Operation = {
     val OpCodeWithMask = IntCodeProgramme.parseOpCode(programme.getOrElse(pointer, 0))

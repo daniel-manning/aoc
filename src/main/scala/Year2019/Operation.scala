@@ -64,6 +64,7 @@ case class InputOperation(address: BigInt, mask:Seq[Mode]) extends Operation {
 
     debugLog(s"Waiting for Input!")
     while(programme.inputQueue.length < 1){
+      programme.waitingForInputQueue.enqueue(0)
       Thread.sleep(5)
     }
 

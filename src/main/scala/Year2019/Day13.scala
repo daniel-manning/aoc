@@ -20,13 +20,15 @@ object Day13 extends SimpleSwingApplication {
     .toVector
     .map(BigInt(_))
 
-    val tiles = ArcadeCabinet.loadGame(sourceCode)
+    implicit val (ex1, queues) = ArcadeCabinet.loadGame(sourceCode)
+
+  val tiles = ArcadeCabinet.grabFrame
 
   println(s"There are ${tiles.count(t => t.isInstanceOf[Block])} block tiles")
 
   lazy val ui: Panel = new Panel {
     background = Color.black
-    preferredSize = new Dimension(700, 700)
+    preferredSize = new Dimension(700, 500)
 
     focusable = true
 
@@ -45,23 +47,19 @@ object Day13 extends SimpleSwingApplication {
       val drawHeight:Int = 9
 
       tiles.foreach {
-        case Wall(x, y) => {
+        case Wall(x, y) =>
           g.setColor(Color.white)
           g.fillRect(offsetX + x * width, offsetY - y * height, drawWidth, drawHeight)
-        }
-        case Block(x, y) => {
+        case Block(x, y) =>
           g.setColor(Color.blue)
           g.fillRect(offsetX + x * width, offsetY - y * height, drawWidth, drawHeight)
-        }
-        case HorizontalPaddle(x, y) => {
+        case HorizontalPaddle(x, y) =>
           g.setColor(Color.green)
           g.fillRect(offsetX + x * width, offsetY - y * height, drawWidth, drawHeight)
-        }
-        case Ball(x, y) => {
+        case Ball(x, y) =>
           g.setColor(Color.red)
           g.fillRect(offsetX + x * width, offsetY - y * height, drawWidth, drawHeight)
-        }
-        case EmptyTile(_, _) => {}
+        case EmptyTile(_, _) =>
       }
 
     }
@@ -94,9 +92,25 @@ object Tile {
 }
 
 object ArcadeCabinet {
+  def grabFrame(implicit ex1: Future[IntCodeProgramme], queues: Queues): Seq[Tile] = {
 
-  def loadGame(sourceCode: Vector[BigInt]): Seq[Tile] = {
-    val queues = Queues(new mutable.Queue[BigInt](), new mutable.Queue[BigInt]())
+    //block thread until programme exits or waits for Input
+    while (!ex1.isCompleted || queues.waitingForInputQueue.nonEmpty) {
+      Thread.sleep(20)
+    }
+
+
+    //remove any messages
+    queues.waitingForInputQueue.dequeueAll(_ => true)
+
+    //gather outputs
+    val outputs = queues.outputQueue.dequeueAll(_ => true)
+
+    outputs.sliding(3, 3).map(l => Tile(l(0).toInt, l(1).toInt, l(2).toInt)).toSeq
+  }
+
+  def loadGame(sourceCode: Vector[BigInt]): (Future[IntCodeProgramme], Queues) = {
+    val queues = Queues(new mutable.Queue[BigInt](), new mutable.Queue[BigInt](), new mutable.Queue[BigInt]())
 
     val computerOne = IntCodeProgramme(programme = vectorProgrammeToMap(sourceCode),
       inputQueue = queues.inputQueue,
@@ -104,14 +118,7 @@ object ArcadeCabinet {
 
     val ex1 = Future { computerOne.runProgramme()(RunningSettings("ArcadeGame", debugOutput = false))}
 
-    while(!ex1.isCompleted){
-      Thread.sleep(20)
-    }
-
-    val outputs = queues.outputQueue.dequeueAll(_ => true)
-
-    outputs.sliding(3, 3).map(l => Tile(l(0).toInt, l(1).toInt, l(2).toInt)).toSeq
-
+    (ex1, queues)
   }
 
 
