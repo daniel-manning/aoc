@@ -78,10 +78,14 @@ object Day13 extends SimpleSwingApplication {
   }
 
   def repaint(): Unit = {
-    queues.inputQueue.enqueue(NeutralPosition.value)
+    val ballPosition = tiles.find(_.isInstanceOf[Ball]).get
+    val paddlePosition = tiles.find(_.isInstanceOf[HorizontalPaddle]).get
+    println(s"Score is: ${tiles.find(_.isInstanceOf[ScoreBoard]).map(_.asInstanceOf[ScoreBoard].score).getOrElse("Unknown")}")
+
+    queues.inputQueue.enqueue(ballPosition.x.compareTo(paddlePosition.x))
     queues.waitingForInputQueue.dequeueAll(_ => true)
+
     val updateTiles = ArcadeCabinet.updateFrame(tiles)
-    //println(s"updateTiles: $updateTiles")
     if(updateTiles.nonEmpty){
       tiles = updateTiles
       ui.repaint()
@@ -90,7 +94,7 @@ object Day13 extends SimpleSwingApplication {
 
   ///////////////MONIX TASKS
   val tick = {
-    Observable.interval(Duration(20, MILLISECONDS))
+    Observable.interval(Duration(400, MILLISECONDS))
       .map(x => repaint())
   }
 
@@ -149,8 +153,6 @@ object ArcadeCabinet {
   private def getOutputs(implicit ex1: Future[IntCodeProgramme], queues: Queues): Seq[BigInt] = {
     //block thread until programme exits or waits for Input
     while (!ex1.isCompleted && queues.waitingForInputQueue.isEmpty) {
-      println(queues.outputQueue.length)
-      println(queues.waitingForInputQueue.length)
       Thread.sleep(20)
     }
 
@@ -163,7 +165,6 @@ object ArcadeCabinet {
 
   def grabFrame(implicit ex1: Future[IntCodeProgramme], queues: Queues): Seq[Tile] = {
     val outputs = getOutputs
-    println(s"outputs: $outputs")
 
     val minusOne = BigInt(-1)
     val zero = BigInt(0)
@@ -175,10 +176,7 @@ object ArcadeCabinet {
   }
 
   def updateFrame(tiles: Seq[Tile])(implicit ex1: Future[IntCodeProgramme], queues: Queues): Seq[Tile] = {
-
     val outputs = getOutputs
-
-    println(s"outputs: $outputs")
 
     val minusOne = BigInt(-1)
     val zero = BigInt(0)
@@ -191,15 +189,24 @@ object ArcadeCabinet {
     val tileSet = tiles.toSet
     val blocksBroken = tileUpdates.flatMap(t => tileSet.find(p => p.x == t.x && p.y == t.y))
     val ball = tileSet.filter(_.isInstanceOf[Ball])
+    val scores = tileSet.filter(_.isInstanceOf[ScoreBoard])
 
-    val result = tileSet
-      .removedAll(blocksBroken)
-      .removedAll(ball)
-      .union(tileUpdates.toSet)
-      .toSeq
+     val hasScoreUpdated = tileUpdates.exists(_.isInstanceOf[ScoreBoard])
 
-    //println(s"result: $result")
-    result
+    if(hasScoreUpdated){
+      tileSet
+        .removedAll(blocksBroken)
+        .removedAll(ball)
+        .removedAll(scores)
+        .union(tileUpdates.toSet)
+        .toSeq
+    }else {
+      tileSet
+        .removedAll(blocksBroken)
+        .removedAll(ball)
+        .union(tileUpdates.toSet)
+        .toSeq
+    }
   }
 
   def loadGame(sourceCode: Vector[BigInt]): (Future[IntCodeProgramme], Queues) = {
