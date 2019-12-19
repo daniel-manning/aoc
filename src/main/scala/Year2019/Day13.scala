@@ -49,6 +49,11 @@ object Day13 extends SimpleSwingApplication {
       val drawHeight: Int = 9
 
       tiles.foreach {
+        case ScoreBoard(x, y, score) =>
+          g.setColor(Color.orange)
+          g.fillRect(offsetX + x * width, offsetY - y * height, drawWidth, drawHeight)
+          g.setColor(Color.lightGray)
+          g.drawString(score.toString, x, y)
         case Wall(x, y) =>
           g.setColor(Color.white)
           g.fillRect(offsetX + x * width, offsetY - y * height, drawWidth, drawHeight)
@@ -75,7 +80,8 @@ object Day13 extends SimpleSwingApplication {
   def repaint(): Unit = {
     queues.inputQueue.enqueue(NeutralPosition.value)
     queues.waitingForInputQueue.dequeueAll(_ => true)
-    val updateTiles = ArcadeCabinet.grabFrame
+    val updateTiles = ArcadeCabinet.updateFrame(tiles)
+    //println(s"updateTiles: $updateTiles")
     if(updateTiles.nonEmpty){
       tiles = updateTiles
       ui.repaint()
@@ -94,7 +100,10 @@ object Day13 extends SimpleSwingApplication {
 }
 
 
-sealed trait Tile
+sealed trait Tile{
+  val x: Int
+  val y: Int
+}
 
 case class EmptyTile(x: Int, y: Int) extends Tile
 
@@ -105,6 +114,8 @@ case class Block(x: Int, y: Int) extends Tile
 case class HorizontalPaddle(x: Int, y: Int) extends Tile
 
 case class Ball(x: Int, y: Int) extends Tile
+
+case class ScoreBoard(x: Int, y: Int, score: BigInt) extends Tile
 
 object Tile {
   def apply(x: Int, y: Int, tileIdentifier: Int): Tile =
@@ -134,8 +145,8 @@ case object RightTiltedPosition extends JoyStickMovement {
 }
 
 object ArcadeCabinet {
-  def grabFrame(implicit ex1: Future[IntCodeProgramme], queues: Queues): Seq[Tile] = {
 
+  private def getOutputs(implicit ex1: Future[IntCodeProgramme], queues: Queues): Seq[BigInt] = {
     //block thread until programme exits or waits for Input
     while (!ex1.isCompleted && queues.waitingForInputQueue.isEmpty) {
       println(queues.outputQueue.length)
@@ -143,15 +154,52 @@ object ArcadeCabinet {
       Thread.sleep(20)
     }
 
-
     //remove any messages
     queues.waitingForInputQueue.dequeueAll(_ => true)
 
     //gather outputs
-    val outputs = queues.outputQueue.dequeueAll(_ => true)
-    //println(s"outputs: $outputs")
+    queues.outputQueue.dequeueAll(_ => true)
+  }
 
-    outputs.sliding(3, 3).map(l => Tile(l(0).toInt, l(1).toInt, l(2).toInt)).toSeq
+  def grabFrame(implicit ex1: Future[IntCodeProgramme], queues: Queues): Seq[Tile] = {
+    val outputs = getOutputs
+    println(s"outputs: $outputs")
+
+    val minusOne = BigInt(-1)
+    val zero = BigInt(0)
+
+    outputs.sliding(3, 3).map {
+      case Seq(`minusOne`, `zero`, score) => ScoreBoard(200, 300, score)
+      case Seq(x, y, tileIdentifier) => Tile(x.toInt, y.toInt, tileIdentifier.toInt)
+    }.toSeq
+  }
+
+  def updateFrame(tiles: Seq[Tile])(implicit ex1: Future[IntCodeProgramme], queues: Queues): Seq[Tile] = {
+
+    val outputs = getOutputs
+
+    println(s"outputs: $outputs")
+
+    val minusOne = BigInt(-1)
+    val zero = BigInt(0)
+
+    val tileUpdates: Seq[Tile] = outputs.sliding(3, 3).map {
+      case Seq(`minusOne`, `zero`, score) => ScoreBoard(200, 300, score)
+      case Seq(x, y, tileIdentifier) => Tile(x.toInt, y.toInt, tileIdentifier.toInt)
+    }.toSeq
+
+    val tileSet = tiles.toSet
+    val blocksBroken = tileUpdates.flatMap(t => tileSet.find(p => p.x == t.x && p.y == t.y))
+    val ball = tileSet.filter(_.isInstanceOf[Ball])
+
+    val result = tileSet
+      .removedAll(blocksBroken)
+      .removedAll(ball)
+      .union(tileUpdates.toSet)
+      .toSeq
+
+    //println(s"result: $result")
+    result
   }
 
   def loadGame(sourceCode: Vector[BigInt]): (Future[IntCodeProgramme], Queues) = {
