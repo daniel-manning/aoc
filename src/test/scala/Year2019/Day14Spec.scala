@@ -22,31 +22,31 @@ class Day14Spec extends AnyWordSpec with Matchers {
   }
 
   "Reactions" should {
-      "find the ends of a reaction chain" in {
-        val reactionInput =
-          """10 ORE => 10 A
-            |1 ORE => 1 B
-            |7 A, 1 B => 1 C
-            |7 A, 1 C => 1 D
-            |7 A, 1 D => 1 E
-            |7 A, 1 E => 1 FUEL""".stripMargin
+    "find the ends of a reaction chain" in {
+      val reactionInput =
+        """10 ORE => 10 A
+          |1 ORE => 1 B
+          |7 A, 1 B => 1 C
+          |7 A, 1 C => 1 D
+          |7 A, 1 D => 1 E
+          |7 A, 1 E => 1 FUEL""".stripMargin
 
-        val reactions = CriticalPath.makeReactionListFromRecipe(reactionInput)
+      val reactions = CriticalPath.makeReactionListFromRecipe(reactionInput)
 
-        val reactionsMap = CriticalPath.turnReactionsToMap(reactions)
-        CriticalPath.findEnds(reactionsMap) shouldBe Seq("FUEL")
-      }
+      val reactionsMap = CriticalPath.turnReactionsToMap(reactions)
+      CriticalPath.findEnds(reactionsMap) shouldBe Seq("FUEL")
+    }
   }
 
   "Reaction Handler" should {
     "properly evaluate critical path" in {
       val reactionInput =
         """10 ORE => 10 A
-        |1 ORE => 1 B
-        |7 A, 1 B => 1 C
-        |7 A, 1 C => 1 D
-        |7 A, 1 D => 1 E
-        |7 A, 1 E => 1 FUEL""".stripMargin
+          |1 ORE => 1 B
+          |7 A, 1 B => 1 C
+          |7 A, 1 C => 1 D
+          |7 A, 1 D => 1 E
+          |7 A, 1 E => 1 FUEL""".stripMargin
 
       val reactions = CriticalPath.makeReactionListFromRecipe(reactionInput)
 
@@ -103,7 +103,7 @@ class Day14Spec extends AnyWordSpec with Matchers {
         Seq(Ingredient(7, "A"), Ingredient(10, "ORE"))
     }
 
-    "find fuel for test case two"in {
+    "find fuel for test case two" in {
       val reactionInput =
         """9 ORE => 2 A
           |8 ORE => 3 B
@@ -118,7 +118,7 @@ class Day14Spec extends AnyWordSpec with Matchers {
       CriticalPath.minimumInput(reactions) shouldBe Ingredient(165, "ORE")
     }
 
-    "find fuel for test case three"in {
+    "find fuel for test case three" in {
       val reactionInput =
         """157 ORE => 5 NZVS
           |165 ORE => 6 DCFZ
@@ -135,7 +135,7 @@ class Day14Spec extends AnyWordSpec with Matchers {
       CriticalPath.minimumInput(reactions) shouldBe Ingredient(13312, "ORE")
     }
 
-    "find fuel for test case four"in {
+    "find fuel for test case four" in {
       val reactionInput =
         """2 VPVL, 7 FWMGM, 2 CXFTF, 11 MNCFX => 1 STKFG
           |17 NVRVD, 3 JNWZP => 8 VPVL
@@ -155,7 +155,7 @@ class Day14Spec extends AnyWordSpec with Matchers {
       CriticalPath.minimumInput(reactions) shouldBe Ingredient(180697, "ORE")
     }
 
-    "find fuel for test case five"in {
+    "find fuel for test case five" in {
       val reactionInput =
         """171 ORE => 8 CNZTR
           |7 ZLQW, 3 BMBT, 9 XCVML, 26 XMNCP, 1 WPTQ, 2 MZWV, 1 RJRHP => 4 PLWSL
@@ -247,7 +247,7 @@ class Day14Spec extends AnyWordSpec with Matchers {
       CriticalPath.calculateYieldForFuel(reactions, maximumOre) shouldBe 460664
     }
 
-    "use a recipe to create an ingredient" in  {
+    "use a recipe to create an ingredient" in {
       val reactionInput =
         """171 ORE => 8 CNZTR
           |114 ORE => 4 BHXH
@@ -256,11 +256,11 @@ class Day14Spec extends AnyWordSpec with Matchers {
       val reactions = CriticalPath.makeReactionListFromRecipe(reactionInput)
       val ore = Ingredient(BigInt("475"), "ORE")
 
-      CriticalPath.useRecipe(reactions, Set(ore)) shouldBe Set(Ingredient(BigInt(1), "ORE"), Ingredient(BigInt(8), "CNZTR"),
+      CriticalPath.useRecipe(reactions, reactions, Set(ore)) shouldBe Set(Ingredient(BigInt(1), "ORE"), Ingredient(BigInt(8), "CNZTR"),
         Ingredient(BigInt(4), "BHXH"), Ingredient(BigInt(9), "KTJDG"))
     }
 
-    "find the results from the minimum ore per fuel" in  {
+    "find the results from the minimum ore per fuel" in {
       val reactionInput =
         """171 ORE => 8 CNZTR
           |7 ZLQW, 3 BMBT, 9 XCVML, 26 XMNCP, 1 WPTQ, 2 MZWV, 1 RJRHP => 4 PLWSL
@@ -282,10 +282,14 @@ class Day14Spec extends AnyWordSpec with Matchers {
 
       val reactions = CriticalPath.makeReactionListFromRecipe(reactionInput)
 
-      CriticalPath.results(reactions) shouldBe Set(Ingredient(BigInt(1), "FUEL"))
+      CriticalPath.results(reactions) shouldBe
+        (BigInt(2210736), Set(Ingredient(1,"PLWSL"), Ingredient(4,"MZWV"), Ingredient(5,"VRPVC"), Ingredient(1,"BMBT"),
+          Ingredient(3,"KTJDG"), Ingredient(3,"BHXH"), Ingredient(1,"WPTQ"), Ingredient(3,"ZLQW"),
+          Ingredient(1,"XDBXC"), Ingredient(5,"FHTLT"), Ingredient(1,"FUEL"), Ingredient(3,"XCVML"),
+          Ingredient(1,"LTCX"), Ingredient(1,"RJRHP")))
     }
 
-    "run previous reactions when it needs extra ingredients" in  {
+    "run previous reactions when it needs extra ingredients" in {
       val reactionInput =
         """171 ORE => 8 CNZTR
           |7 ZLQW, 3 BMBT, 9 XCVML, 26 XMNCP, 1 WPTQ, 2 MZWV, 1 RJRHP => 4 PLWSL
@@ -307,12 +311,40 @@ class Day14Spec extends AnyWordSpec with Matchers {
 
       val reactions = CriticalPath.makeReactionListFromRecipe(reactionInput)
 
-      val ingredients = Set(Ingredient(7,"VRPVC"), Ingredient(8,"CNZTR"), Ingredient(4,"BHXH"), Ingredient(9,"KTJDG"), Ingredient(2210141,"ORE"))
-      val reaction = Reaction(List(Ingredient(5,"BHXH"), Ingredient(4,"VRPVC")),Ingredient(5,"LTCX"))
+      val ingredients = Set(Ingredient(7, "VRPVC"), Ingredient(8, "CNZTR"), Ingredient(4, "BHXH"), Ingredient(9, "KTJDG"), Ingredient(2210141, "ORE"))
+      val reaction = Reaction(List(Ingredient(5, "BHXH"), Ingredient(4, "VRPVC")), Ingredient(5, "LTCX"))
 
       CriticalPath.useRecipe(reaction, reactions, ingredients) shouldBe
-        Set(Ingredient(3,"VRPVC"), Ingredient(8,"CNZTR"), Ingredient(3,"BHXH"), Ingredient(9,"KTJDG"), Ingredient(5,"LTCX"), Ingredient(2210027,"ORE"))
+        Set(Ingredient(3, "VRPVC"), Ingredient(8, "CNZTR"), Ingredient(3, "BHXH"), Ingredient(9, "KTJDG"), Ingredient(5, "LTCX"), Ingredient(2210027, "ORE"))
+    }
+
+    "run multiple previous reactions when it needs extra ingredients" in {
+      val reactionInput =
+        """171 ORE => 8 CNZTR
+          |7 ZLQW, 3 BMBT, 9 XCVML, 26 XMNCP, 1 WPTQ, 2 MZWV, 1 RJRHP => 4 PLWSL
+          |114 ORE => 4 BHXH
+          |14 VRPVC => 6 BMBT
+          |6 BHXH, 18 KTJDG, 12 WPTQ, 7 PLWSL, 31 FHTLT, 37 ZDVW => 1 FUEL
+          |6 WPTQ, 2 BMBT, 8 ZLQW, 18 KTJDG, 1 XMNCP, 6 MZWV, 1 RJRHP => 6 FHTLT
+          |15 XDBXC, 2 LTCX, 1 VRPVC => 6 ZLQW
+          |13 WPTQ, 10 LTCX, 3 RJRHP, 14 XMNCP, 2 MZWV, 1 ZLQW => 1 ZDVW
+          |5 BMBT => 4 WPTQ
+          |189 ORE => 9 KTJDG
+          |1 MZWV, 17 XDBXC, 3 XCVML => 2 XMNCP
+          |12 VRPVC, 27 CNZTR => 2 XDBXC
+          |15 KTJDG, 12 BHXH => 5 XCVML
+          |3 BHXH, 2 VRPVC => 7 MZWV
+          |121 ORE => 7 VRPVC
+          |7 XCVML => 6 RJRHP
+          |5 BHXH, 4 VRPVC => 5 LTCX""".stripMargin
+
+      val reactions = CriticalPath.makeReactionListFromRecipe(reactionInput)
+
+      val ingredients = Set(Ingredient(2209838, "ORE"), Ingredient(3, "KTJDG"))
+      val reaction = Reaction(List(Ingredient(15, "KTJDG"), Ingredient(12, "BHXH")), Ingredient(5, "XCVML"))
+
+      CriticalPath.useRecipe(reaction, reactions, ingredients) shouldBe
+        Set(Ingredient(2209118, "ORE"), Ingredient(6, "KTJDG"), Ingredient(5, "XCVML"))
     }
   }
-
 }

@@ -3,6 +3,7 @@ package Year2019
 import scala.io.Source
 import scala.util.parsing.combinator.RegexParsers
 import scala.language.postfixOps
+import scala.math.BigDecimal.RoundingMode
 
 object Day14 extends App {
   val recipe: List[Reaction] = Source.fromResource("2019/day14")
@@ -82,7 +83,7 @@ object CriticalPath {
     go(reactionMap, ingredients).find(_.name == "ORE").get
   }
 
-  def results(reactions: Seq[Reaction]): Set[Ingredient] = {
+  def results(reactions: Seq[Reaction]): (BigInt, Set[Ingredient]) = {
     val ore = minimumInput(reactions)
     val ingredient = Set(ore)
 
@@ -90,19 +91,19 @@ object CriticalPath {
     def go(reactions: Seq[Reaction], ingredients: Set[Ingredient]):Set[Ingredient] = {
       val all = findEachAvailableReaction(reactions, ingredients)
       println(s"all: $all")
-      val updatedIngredients = useRecipe(all, ingredients)
+      val updatedIngredients = useRecipe(all, reactions, ingredients)
       println(s"updatedIngredients: $updatedIngredients")
 
       if(updatedIngredients.exists(_.name == "FUEL")) updatedIngredients
       else go(reactions, updatedIngredients)
     }
 
-    go(reactions, ingredient)
+    (ore.volume, go(reactions, ingredient))
   }
 
 
-  def useRecipe(reactions: Seq[Reaction], ingredients: Set[Ingredient]): Set[Ingredient] =
-    reactions.foldRight(ingredients)((a, b) =>  useRecipe(a, reactions, b))
+  def useRecipe(reactions: Seq[Reaction], allReactions: Seq[Reaction], ingredients: Set[Ingredient]): Set[Ingredient] =
+    reactions.foldRight(ingredients)((a, b) =>  useRecipe(a, allReactions, b))
 
   def useRecipe(reaction: Reaction, reactions: Seq[Reaction], ingredients: Set[Ingredient]): Set[Ingredient] = {
     println(s"Trying to run reaction: $reaction")
@@ -110,20 +111,33 @@ object CriticalPath {
       (a, b) =>
         println(s"a: $a")
         println(s"b: $b")
-        val ingredient = a.find(_.name == b.name).get
+        val ingredient = a.find(_.name == b.name).getOrElse(Ingredient(0, b.name))
         val removed = a.removedAll(Set(ingredient))
         if (ingredient.volume == b.volume)
           removed
         else if (ingredient.volume < b.volume) {
+          println(s"We need more ingredients because ${ingredient} is less than $b")
           //we need more reaction ingredients to satisfy current reactions
           val reactionIngredientToBoost = reactions.find(_.result.name == ingredient.name).get
-          val newIngredients = useRecipe(reactionIngredientToBoost, reactions, a)
+          //boost reaction to scale we need
+          val scale = (BigDecimal(b.volume - ingredient.volume)/ BigDecimal(reactionIngredientToBoost.result.volume)).setScale(0, RoundingMode.CEILING).toBigInt
+          val scaledUpReaction = Reaction(reactionIngredientToBoost.requirements.map{i => i.copy(volume = i.volume * scale)},
+            Ingredient(reactionIngredientToBoost.result.volume * scale, reactionIngredientToBoost.result.name)
+          )
+
+          val newIngredients = useRecipe(scaledUpReaction, reactions, a)
           println(s"newIngredients: $newIngredients")
           val newIngredient = newIngredients.find(_.name == b.name).get
 
-          val newPot = newIngredients.removedAll(Set(newIngredient)).union(Set(Ingredient(newIngredient.volume - b.volume, b.name)))
+          val newPot = newIngredients.removedAll(Set(newIngredient))
           println(s"New reacted pot: $newPot")
-          newPot
+
+          if(newIngredient.volume > b.volume)
+            newPot.union(Set(Ingredient(newIngredient.volume - b.volume, b.name)))
+          else if(newIngredient.volume < b.volume)
+            throw new Exception("Something has gone weird!")
+          else
+            newPot
         }
         else
           removed.union(Set(Ingredient(ingredient.volume - b.volume, b.name)))
@@ -136,7 +150,7 @@ object CriticalPath {
   }
 
   def findEachAvailableReaction(reactions:Seq[Reaction], ingredients: Set[Ingredient]): Seq[Reaction] =
-    reactions.filter(r => /*!ingredients.exists(_.name == r.result.name) &&*/ r.requirements.forall(i => ingredients.exists(_.name == i.name)))
+    reactions.filter(r => !ingredients.exists(_.name == r.result.name) && r.requirements.forall(i => ingredients.exists(_.name == i.name)))
 
   def decomposeTarget(name:String, ingredients: Seq[Ingredient], reactions: Seq[Reaction]): Seq[Ingredient] = {
     val targetReaction = reactions.find(_.result.name == name).get
