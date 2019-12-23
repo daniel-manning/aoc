@@ -90,15 +90,42 @@ object CriticalPath {
     @scala.annotation.tailrec
     def go(reactions: Seq[Reaction], ingredients: Set[Ingredient]):Set[Ingredient] = {
       val all = findEachAvailableReaction(reactions, ingredients)
-      println(s"all: $all")
+      //println(s"all: $all")
       val updatedIngredients = useRecipe(all, reactions, ingredients)
-      println(s"updatedIngredients: $updatedIngredients")
+      //println(s"updatedIngredients: $updatedIngredients")
 
       if(updatedIngredients.exists(_.name == "FUEL")) updatedIngredients
       else go(reactions, updatedIngredients)
     }
 
     (ore.volume, go(reactions, ingredient))
+  }
+
+  def totalThenSquash(reactions: Seq[Reaction], amountOfOre: BigInt): List[Ingredient] = {
+    val (orePerFuel, oneFuelPlusWaste) = results(reactions)
+    val scaleFactor = (BigDecimal(amountOfOre)/BigDecimal(orePerFuel)).setScale(0, RoundingMode.FLOOR).toBigInt
+    val remainder = amountOfOre.mod(orePerFuel)
+
+    val total = oneFuelPlusWaste
+      .map(i => i.copy(volume = i.volume * scaleFactor))
+      .union(Set(Ingredient(remainder, "ORE")))
+
+    println("Hello --- A !!!")
+    println(s"total: $total")
+    LazyList.unfold(total){
+      mixture =>
+        println("Hello --- B !!!")
+        val fuel = mixture.find(_.name == "FUEL")
+        val pureWaste = mixture.filterNot(_.name == "FUEL")
+        println(s"fuel: $fuel")
+        println("Hello --- C !!!")
+        val all = findEachAvailableReaction(reactions, pureWaste)
+        println(s"all: $all")
+        val updatedIngredients = useRecipe(all, reactions, pureWaste)
+        println(s"updatedIngredients: $updatedIngredients")
+
+        Some(fuel, updatedIngredients)
+    }.flatten.toList
   }
 
 
@@ -116,7 +143,7 @@ object CriticalPath {
         if (ingredient.volume == b.volume)
           removed
         else if (ingredient.volume < b.volume) {
-          println(s"We need more ingredients because ${ingredient} is less than $b")
+          //println(s"We need more ingredients because ${ingredient} is less than $b")
           //we need more reaction ingredients to satisfy current reactions
           val reactionIngredientToBoost = reactions.find(_.result.name == ingredient.name).get
           //boost reaction to scale we need
@@ -126,11 +153,11 @@ object CriticalPath {
           )
 
           val newIngredients = useRecipe(scaledUpReaction, reactions, a)
-          println(s"newIngredients: $newIngredients")
+          //println(s"newIngredients: $newIngredients")
           val newIngredient = newIngredients.find(_.name == b.name).get
 
           val newPot = newIngredients.removedAll(Set(newIngredient))
-          println(s"New reacted pot: $newPot")
+          //println(s"New reacted pot: $newPot")
 
           if(newIngredient.volume > b.volume)
             newPot.union(Set(Ingredient(newIngredient.volume - b.volume, b.name)))

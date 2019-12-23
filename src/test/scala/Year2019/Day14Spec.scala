@@ -197,7 +197,10 @@ class Day14Spec extends AnyWordSpec with Matchers {
       val reactions = CriticalPath.makeReactionListFromRecipe(reactionInput)
       val maximumOre = Ingredient(BigInt("1000000000000"), "ORE")
 
-      CriticalPath.calculateYieldForFuel(reactions, maximumOre) shouldBe 82892753
+      //CriticalPath.calculateYieldForFuel(reactions, maximumOre) shouldBe 82892753
+                                                                           75120192
+      val theReturn = CriticalPath.totalThenSquash(reactions, maximumOre.volume)
+      println(s"Ooh some return: $theReturn")
     }
 
     "calculate yield for test case two" in {
