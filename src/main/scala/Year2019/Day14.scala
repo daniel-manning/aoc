@@ -19,6 +19,10 @@ object Day14 extends App {
   println(s"Maximum fuel for ore: $maxFuelForOre")
 }
 
+sealed trait ReactionResult
+case object ReactionSuccess extends ReactionResult
+case object ReactionFailure extends ReactionResult
+
 
 case class Ingredient(volume: BigInt, name: String)
 
@@ -91,7 +95,7 @@ object CriticalPath {
     def go(reactions: Seq[Reaction], ingredients: Set[Ingredient]):Set[Ingredient] = {
       val all = findEachAvailableReaction(reactions, ingredients)
       //println(s"all: $all")
-      val updatedIngredients = useRecipe(all, reactions, ingredients)
+      val (updatedIngredients, result) = useRecipe(all, reactions, ingredients)
       //println(s"updatedIngredients: $updatedIngredients")
 
       if(updatedIngredients.exists(_.name == "FUEL")) updatedIngredients
@@ -103,8 +107,8 @@ object CriticalPath {
 
   def totalThenSquash(reactions: Seq[Reaction], amountOfOre: BigInt): List[Ingredient] = {
     val (orePerFuel, oneFuelPlusWaste) = results(reactions)
-    val scaleFactor = (BigDecimal(amountOfOre)/BigDecimal(orePerFuel)).setScale(0, RoundingMode.FLOOR).toBigInt
-    val remainder = amountOfOre.mod(orePerFuel)
+    val scaleFactor = (BigDecimal(amountOfOre)/BigDecimal(orePerFuel)).setScale(0, RoundingMode.FLOOR).toBigInt //BigInt("100000")
+    val remainder = amountOfOre.mod(orePerFuel) //amountOfOre - scaleFactor * orePerFuel
 
     val total = oneFuelPlusWaste
       .map(i => i.copy(volume = i.volume * scaleFactor))
@@ -124,56 +128,73 @@ object CriticalPath {
         val updatedIngredients = useRecipe(all, reactions, pureWaste)
         println(s"updatedIngredients: $updatedIngredients")
 
-        Some(fuel, updatedIngredients)
+       updatedIngredients._2 match {
+         case ReactionSuccess => Some(fuel, updatedIngredients._1)
+         case ReactionFailure => None
+       }
     }.flatten.toList
   }
 
 
-  def useRecipe(reactions: Seq[Reaction], allReactions: Seq[Reaction], ingredients: Set[Ingredient]): Set[Ingredient] =
-    reactions.foldRight(ingredients)((a, b) =>  useRecipe(a, allReactions, b))
+  def useRecipe(reactions: Seq[Reaction], allReactions: Seq[Reaction], ingredients: Set[Ingredient]): (Set[Ingredient], ReactionResult) =
+    reactions.foldRight[(Set[Ingredient], ReactionResult)]((ingredients, ReactionFailure)){
+      (a, b) =>  val result = useRecipe(a, allReactions, b._1)
+        (result._1, if(result._2 == ReactionSuccess) ReactionSuccess else b._2)
+    }
 
-  def useRecipe(reaction: Reaction, reactions: Seq[Reaction], ingredients: Set[Ingredient]): Set[Ingredient] = {
+  def useRecipe(reaction: Reaction, reactions: Seq[Reaction], ingredients: Set[Ingredient]): (Set[Ingredient], ReactionResult) = {
     println(s"Trying to run reaction: $reaction")
-    val list = reaction.requirements.foldLeft((ingredients.toSet)) {
+    val list: (Set[Ingredient], ReactionResult) = reaction.requirements.foldLeft[(Set[Ingredient], ReactionResult)]((ingredients, ReactionFailure)) {
       (a, b) =>
         println(s"a: $a")
         println(s"b: $b")
-        val ingredient = a.find(_.name == b.name).getOrElse(Ingredient(0, b.name))
-        val removed = a.removedAll(Set(ingredient))
+        val ingredient = a._1.find(_.name == b.name).getOrElse(Ingredient(0, b.name))
+        val removed = a._1.removedAll(Set(ingredient))
         if (ingredient.volume == b.volume)
-          removed
+          (removed, ReactionSuccess)
         else if (ingredient.volume < b.volume) {
           //println(s"We need more ingredients because ${ingredient} is less than $b")
-          //we need more reaction ingredients to satisfy current reactions
-          val reactionIngredientToBoost = reactions.find(_.result.name == ingredient.name).get
-          //boost reaction to scale we need
-          val scale = (BigDecimal(b.volume - ingredient.volume)/ BigDecimal(reactionIngredientToBoost.result.volume)).setScale(0, RoundingMode.CEILING).toBigInt
-          val scaledUpReaction = Reaction(reactionIngredientToBoost.requirements.map{i => i.copy(volume = i.volume * scale)},
-            Ingredient(reactionIngredientToBoost.result.volume * scale, reactionIngredientToBoost.result.name)
-          )
+          //if we're out of ore fail the experiment
+          if(ingredient.name == "ORE") (a._1, ReactionFailure)
+          else {
+            //we need more reaction ingredients to satisfy current reactions
+            val reactionIngredientToBoost = reactions.find(_.result.name == ingredient.name).get
+             //boost reaction to scale we need
+             val scale = (BigDecimal(b.volume - ingredient.volume) / BigDecimal(reactionIngredientToBoost.result.volume)).setScale(0, RoundingMode.CEILING).toBigInt
+             val scaledUpReaction = Reaction(reactionIngredientToBoost.requirements.map { i => i.copy(volume = i.volume * scale) },
+               Ingredient(reactionIngredientToBoost.result.volume * scale, reactionIngredientToBoost.result.name)
+             )
 
-          val newIngredients = useRecipe(scaledUpReaction, reactions, a)
-          //println(s"newIngredients: $newIngredients")
-          val newIngredient = newIngredients.find(_.name == b.name).get
+             val (newIngredients, result) = useRecipe(scaledUpReaction, reactions, a._1)
+             //println(s"newIngredients: $newIngredients")
+             result match {
+               case ReactionFailure => (newIngredients, result)
+               case ReactionSuccess =>
+                 val newIngredient = newIngredients.find(_.name == b.name).get
 
-          val newPot = newIngredients.removedAll(Set(newIngredient))
-          //println(s"New reacted pot: $newPot")
+                 val newPot = newIngredients.removedAll(Set(newIngredient))
+                 //println(s"New reacted pot: $newPot")
 
-          if(newIngredient.volume > b.volume)
-            newPot.union(Set(Ingredient(newIngredient.volume - b.volume, b.name)))
-          else if(newIngredient.volume < b.volume)
-            throw new Exception("Something has gone weird!")
-          else
-            newPot
-        }
-        else
-          removed.union(Set(Ingredient(ingredient.volume - b.volume, b.name)))
+                 if (newIngredient.volume > b.volume)
+                   (newPot.union(Set(Ingredient(newIngredient.volume - b.volume, b.name))), ReactionSuccess)
+                 else if (newIngredient.volume < b.volume)
+                   throw new Exception("Something has gone weird!")
+                 else
+                   (newPot, ReactionSuccess)
+             }
+           }
+        } else
+          (removed.union(Set(Ingredient(ingredient.volume - b.volume, b.name))), ReactionSuccess)
     }
 
     //add reaction to ingredients adding in new
-    list.find(_.name == reaction.result.name)
-      .map(i => list.removedAll(Set(i)).union(Set(Ingredient(reaction.result.volume + i.volume, i.name))))
-      .getOrElse(list.union(Set(reaction.result)))
+    list._2 match {
+      case ReactionFailure => list
+      case ReactionSuccess =>
+        (list._1.find(_.name == reaction.result.name)
+          .map(i => list._1.removedAll(Set(i)).union(Set(Ingredient(reaction.result.volume + i.volume, i.name))))
+          .getOrElse(list._1.union(Set(reaction.result))), ReactionSuccess)
+    }
   }
 
   def findEachAvailableReaction(reactions:Seq[Reaction], ingredients: Set[Ingredient]): Seq[Reaction] =
