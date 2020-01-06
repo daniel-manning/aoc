@@ -16,11 +16,21 @@ object Direction {
   }
 }
 
-sealed trait Orientation
-case object North extends Orientation
-case object East extends Orientation
-case object West extends Orientation
-case object South extends Orientation
+sealed trait Orientation{
+  def vector: (Int, Int)
+}
+case object North extends Orientation{
+  val vector = (0, 1)
+}
+case object East extends Orientation{
+  val vector = (1, 0)
+}
+case object West extends Orientation{
+  val vector = (-1, 0)
+}
+case object South extends Orientation{
+  val vector = (0, -1)
+}
 
 object Orientation {
 
