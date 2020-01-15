@@ -4,7 +4,7 @@ import scala.concurrent.Future
 
 sealed trait SearchResult
 case object SearchSuccess extends SearchResult
-case class SearchFailure(availableNextSteps: Seq[Orientation]) extends SearchResult
+case class SearchFailure(availableNextSteps: Seq[(Orientation, CraftTile)]) extends SearchResult
 
 object MazeSolverMine {
 
@@ -17,11 +17,15 @@ object MazeSolverMine {
     } else {
       //we need to explore a little more
       //TODO: This bit needs to be better and prioritise unexplored tiled (which won't be in the set) otherwise we'll loop
-      val unvisited: Seq[Orientation] = Seq(North, South, East, West).filterNot {
-        (d:Orientation) =>
+      val unvisited: Seq[(Orientation, CraftTile)] = Seq(North, South, East, West).map {
+        (d: Orientation) =>
           val (dx, dy) = d.vector
           val p = Position(position.x + dx, position.y + dy)
-          maze.find(_.position == p).exists(t => t.isInstanceOf[CraftWall] || t.isInstanceOf[DeadEnd])
+          maze.find(_.position == p).map(t => (d, t)).getOrElse((d, Unexplored(p)))
+      }.filterNot {
+        t =>
+          val tile = t._2
+          tile.isInstanceOf[CraftWall] || tile.isInstanceOf[DeadEnd]
       }
 
       println(unvisited)

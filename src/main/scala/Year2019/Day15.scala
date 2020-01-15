@@ -120,6 +120,18 @@ case class OxygenUnit(position: Position) extends CraftTile
 case class Unexplored(position: Position) extends CraftTile
 case class DeadEnd(position: Position) extends CraftTile
 
+object CraftTile {
+  implicit def ordering[A <: CraftTile]: Ordering[A] = new Ordering[A] {
+    override def compare(x: A, y: A): Int = {
+      (x, y) match {
+        case (Unexplored(_), _) => -1
+        case (_, Unexplored(_)) => 1
+        case (_, _) => 0
+      }
+    }
+  }
+}
+
 
 case class RepairDroid(tiles: Set[CraftTile], position: Position){
   def run()(implicit ex1: Future[IntCodeProgramme], queues: Queues): Option[RepairDroid] = {
@@ -131,8 +143,15 @@ case class RepairDroid(tiles: Set[CraftTile], position: Position){
           result match {
             case SearchSuccess => None
             case SearchFailure(directions) => {
-              val newMaze = MazeSolverMine.closeOffDeadEnds(tiles, position, directions.toSet)
-              val direction = directions.head
+              val newMaze = MazeSolverMine.closeOffDeadEnds(tiles, position, directions.map(_._1).toSet)
+
+              //this is the hard bit - decide on direction to follow
+              val sortedDirections: Seq[(Orientation, CraftTile)] = directions.sortBy{
+                a => a._2
+              }
+              val direction: Orientation = sortedDirections.head._1
+
+              //set direction and move
               val (newDroid, tile) = setDirection(direction)
               //
               val mazeWithTile = tiles.find(_.position == newDroid.position)
