@@ -47,6 +47,25 @@ class Day16Spec extends AnyWordSpec with Matchers {
     "correctly apply phase 4 for test case 1" in {
       FFT.applyPhase(Seq(0,3,4,1,5,5,1,8)) shouldBe Seq(0,1,0,2,9,4,9,8)
     }
+
+    "After 4 phases have the correct output for test case 1" in {
+      FFT.applyForPhases(Seq(1,2,3,4,5,6,7,8), 4) shouldBe Seq(0,1,0,2,9,4,9,8)
+    }
+
+    "Apply 100 phases correctly for test case 2" in {
+      FFT.apply100PhasesAndKeep8MostSignificant(FFT.stringToSequence("80871224585914546619083218645595")) shouldBe
+        FFT.stringToSequence("24176176")
+    }
+
+    "Apply 100 phases correctly for test case 3" in {
+      FFT.apply100PhasesAndKeep8MostSignificant(FFT.stringToSequence("19617804207202209144916044189917")) shouldBe
+        FFT.stringToSequence("73745418")
+    }
+
+    "Apply 100 phases correctly for test case 4" in {
+      FFT.apply100PhasesAndKeep8MostSignificant(FFT.stringToSequence("69317163492948606335995924319873")) shouldBe
+        FFT.stringToSequence("52432133")
+    }
   }
 
 }

@@ -1,8 +1,16 @@
 package Year2019
 
-object Day16 {
+import scala.io.Source
 
+object Day16 extends App {
 
+  val sequence = Source.fromResource("2019/day16")
+    .getLines()
+    .toList.head
+
+  val result = FFT.apply100PhasesAndKeep8MostSignificant(FFT.stringToSequence(sequence))
+
+  println(s"After applying 100 phases and keeping the 8 most significant figures: $result")
 
 }
 
@@ -39,13 +47,28 @@ object FFT {
       n =>
         val patternForDigit = considerPatternForDigit(pattern, n)
         val multiplier = Math.ceil(sequence.length.toDouble / patternForDigit.length.toDouble).toInt
-        val resultPattern = SeqMultiplier.times(patternForDigit, multiplier).tail
-        println(s"sequence: $sequence")
-        println(s"resultPattern: $resultPattern")
+        val resultPattern = SeqMultiplier.times(patternForDigit, multiplier + 1).tail
+        //        println(s"sequence: $sequence")
+        //        println(s"resultPattern: $resultPattern")
         keepLeastSignificantDigit(applyPatternToPhase(sequence, resultPattern))
     }
   }
 
+  def applyForPhases(sequence: Seq[Int], noOfPhases: Int): Seq[Int] = {
+
+    @scala.annotation.tailrec
+    def go(n:Int, seq: Seq[Int]): Seq[Int] = {
+      if(n <= 0) seq
+      else go(n - 1, applyPhase(seq))
+    }
+
+    go(noOfPhases, sequence)
+  }
+
+  def apply100PhasesAndKeep8MostSignificant(sequence: Seq[Int]): Seq[Int] =
+    applyForPhases(sequence, 100).take(8)
 
 
+//After applying 100 phases and keeping the 8 most significant figures: Vector(4, 5, 8, 3, 4, 2, 7, 2)
+  // 3m
 }
