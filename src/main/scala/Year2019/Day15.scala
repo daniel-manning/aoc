@@ -24,7 +24,7 @@ object Day15 extends SimpleSwingApplication {
     .map(BigInt(_))
 
   implicit val (ex1, queues) = RepairDroid.loadProgramme(sourceCode)
-  implicit var robot: RepairDroid = RepairDroid(Set(), Position(0, 0))
+  implicit var robot: RepairDroid = RepairDroid(Set(EmptySpace(Position(0, 0))), Position(0, 0))
 
   lazy val ui: Panel = new Panel {
     background = Color.black
@@ -35,7 +35,6 @@ object Day15 extends SimpleSwingApplication {
 
     override def paintComponent(g: Graphics2D): Unit = {
       super.paintComponent(g)
-      //println("paint")
       g.setColor(Color.black)
 
       val offsetX = 500
@@ -114,6 +113,7 @@ object DroidStatus {
 sealed trait CraftTile {
   val position: Position
 }
+case class StartingCell(position: Position) extends CraftTile
 case class CraftWall(position: Position) extends CraftTile
 case class EmptySpace(position: Position) extends CraftTile
 case class OxygenUnit(position: Position) extends CraftTile
@@ -124,8 +124,12 @@ object CraftTile {
   implicit def ordering[A <: CraftTile]: Ordering[A] = new Ordering[A] {
     override def compare(x: A, y: A): Int = {
       (x, y) match {
-        case (Unexplored(_), _) => -1
+        //prioritise going to unexplored places
         case (_, Unexplored(_)) => 1
+
+        //I don't remember what this is trying to achieve
+        case (Unexplored(_), _) => -1
+
         case (_, _) => 0
       }
     }
@@ -135,15 +139,13 @@ object CraftTile {
 
 case class RepairDroid(tiles: Set[CraftTile], position: Position){
   def run()(implicit ex1: Future[IntCodeProgramme], queues: Queues): Option[RepairDroid] = {
-      //this shouldnt be here but I can't update the tile set by passing it as a variable
-      /*def findExit(droid: RepairDroid)(implicit ex1: Future[IntCodeProgramme], queues: Queues): Unit = {*/
       println(s"looking for exit")
 
           val result = searchFrom(tiles, position)
           result match {
             case SearchSuccess => None
             case SearchFailure(directions) => {
-              val newMaze = MazeSolverMine.closeOffDeadEnds(tiles, position, directions.map(_._1).toSet)
+              val newMaze = MazeSolverMine.closeOffDeadEnds(tiles, position, directions.toSet)
 
               //this is the hard bit - decide on direction to follow
               val sortedDirections: Seq[(Orientation, CraftTile)] = directions.sortBy{
@@ -153,10 +155,9 @@ case class RepairDroid(tiles: Set[CraftTile], position: Position){
 
               //set direction and move
               val (newDroid, tile) = setDirection(direction)
+              println(s"returned tile is: $tile")
               //
-              val mazeWithTile = tiles.find(_.position == newDroid.position)
-                .map(t => newMaze - t + tile)
-                .getOrElse(newMaze + tile)
+              val mazeWithTile = newMaze + tile
 
               println(s"mazeWithTile: ${mazeWithTile}")
 
