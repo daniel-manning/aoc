@@ -24,7 +24,7 @@ object Day15 extends SimpleSwingApplication {
     .map(BigInt(_))
 
   implicit val (ex1, queues) = RepairDroid.loadProgramme(sourceCode)
-  implicit var robot: RepairDroid = RepairDroid(Set(EmptySpace(Position(0, 0))), Position(0, 0))
+  implicit var robot: RepairDroid = RepairDroid(Set(EmptySpace(Position(0, 0))), Position(0, 0), false)
 
   lazy val ui: Panel = new Panel {
     background = Color.black
@@ -84,13 +84,21 @@ object Day15 extends SimpleSwingApplication {
 
   ///////////////MONIX TASKS
   val tick = {
-    Observable.interval(Duration(400, MILLISECONDS))
-      .map(x => robot = {
-        val result = RepairDroid.interactivePainting(robot)
-        ui.repaint()
-        result.get
-      })
+    Observable.interval(Duration(100, MILLISECONDS))
+      .map(x => update())
   }
+
+  def update() = {
+      val result = RepairDroid.interactivePainting(robot)
+      ui.repaint()
+      if(result.isDefined){
+        robot = result.get
+      } else {
+        robot = robot.copy(isFinished = true)
+      }
+
+    }
+
 
   val cancelable = tick.subscribe()
 
@@ -137,7 +145,7 @@ object CraftTile {
 }
 
 
-case class RepairDroid(tiles: Set[CraftTile], position: Position){
+case class RepairDroid(tiles: Set[CraftTile], position: Position, isFinished: Boolean){
   def run()(implicit ex1: Future[IntCodeProgramme], queues: Queues): Option[RepairDroid] = {
       println(s"looking for exit")
 
@@ -163,7 +171,7 @@ case class RepairDroid(tiles: Set[CraftTile], position: Position){
 
               println(s"Moving droid to: $newDroid")
 
-              Some(RepairDroid(mazeWithTile, newDroid.position))
+              Some(RepairDroid(mazeWithTile, newDroid.position, false))
             }
           }
       }
@@ -249,7 +257,16 @@ object RepairDroid {
 
   def interactivePainting(robot: RepairDroid)(implicit queues: Queues, ex1: Future[IntCodeProgramme]): Option[RepairDroid] = {
     if(ex1.isCompleted) None
-    else {
+    else if(robot.isFinished){
+      //count up the active squares and output
+      val count = robot.tiles.flatMap {
+        case a: EmptySpace => Some(a)
+        case _   => None
+      }.size
+
+      println(s"The number of squares on the route is: $count")
+      None
+    }else {
       println(s"Running robot position: ${robot.position}")
       val newRobot = robot.run()
       //println(s"Robot tile map size: ${newRobot.hullTiles.size}")
