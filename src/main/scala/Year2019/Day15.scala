@@ -4,6 +4,7 @@ import java.awt.Color
 
 import Year2019.MazeSolverMine.{closeOffDeadEnds, searchFrom}
 import Year2019.ProgrammeOperations.vectorProgrammeToMap
+import models.Position
 import monix.execution.Scheduler.Implicits.global
 import monix.reactive.Observable
 
@@ -149,6 +150,8 @@ case class RepairDroid(tiles: Set[CraftTile], position: Position, isFinished: Bo
   def run()(implicit ex1: Future[IntCodeProgramme], queues: Queues): Option[RepairDroid] = {
       println(s"looking for exit")
 
+          //TODO: The outstanding problem is the droid needs to explore the maze fully
+    
           val result = searchFrom(tiles, position)
           result match {
             case SearchSuccess => None

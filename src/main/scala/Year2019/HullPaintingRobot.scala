@@ -1,6 +1,7 @@
 package Year2019
 
 import Year2019.ProgrammeOperations.vectorProgrammeToMap
+import models.Position
 
 import scala.collection.mutable
 import scala.concurrent.{ExecutionContext, Future}

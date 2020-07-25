@@ -1,5 +1,6 @@
 package Year2019
 
+import models.Position
 import org.scalatest.matchers.should.Matchers
 import org.scalatest.wordspec.AnyWordSpec
 

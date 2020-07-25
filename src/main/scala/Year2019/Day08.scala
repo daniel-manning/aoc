@@ -1,5 +1,7 @@
 package Year2019
 
+import models.Position
+
 import scala.io.Source
 
 object Day08 extends App {
@@ -37,7 +39,6 @@ object Colour {
   }
 }
 
-case class Position(x:Int, y:Int)
 case class RenderedImage(pixels:Seq[Seq[Colour]]){
   def printColour(c: Colour):String = c match {
     case Black => " "

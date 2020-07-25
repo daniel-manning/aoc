@@ -1,5 +1,7 @@
 package Year2019
 
+import models.Position
+
 import scala.io.Source
 
 object Day10 extends App {

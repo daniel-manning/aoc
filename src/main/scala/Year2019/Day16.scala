@@ -1,5 +1,7 @@
 package Year2019
 
+import Year2019.FFT.{considerPatternForDigit, pattern}
+
 import scala.io.Source
 
 object Day16 extends App {
@@ -11,6 +13,8 @@ object Day16 extends App {
   val result = FFT.apply100PhasesAndKeep8MostSignificant(FFT.stringToSequence(sequence))
 
   println(s"After applying 100 phases and keeping the 8 most significant figures: $result")
+
+  //println(s"Sequence length: ${sequence.length}")
 
 }
 
@@ -28,36 +32,33 @@ object FFT {
     value.toString.last.toInt - 48
 
 
-  def stringToSequence(sequence:String): Seq[Int] =
-    sequence.map(_.toInt - 48)
+  def stringToSequence(sequence:String): Vector[Int] =
+    sequence.map(_.toInt - 48).toVector
 
-  def applyPatternToPhase(phase:Seq[Int], patten:Seq[Int]): Int = {
-    val multiplier = Math.ceil(phase.length.toDouble / patten.length.toDouble).toInt
-    phase
-      .zip(SeqMultiplier.times(patten, multiplier))
-      .map(l => l._1 * l._2)
-      .sum
+  def applyPatternToPhase(phase:Vector[Int], n: Int): Int = {
+    val length = phase.length
+    val pluses = (1 to length).flatMap(x => (1 to n).map(l => (n * (4*x - 3) + l - 2))).takeWhile(_ < length)
+    val minuses = (1 to length).flatMap(x => (1 to n).map(l => (n * (4*x - 1) + l - 2))).takeWhile(_ < length)
+/*    println(s"sums: ${pluses.map(phase)}")
+    println(s"minuses: ${minuses.map(phase)}")*/
+
+    pluses.map(phase).sum - minuses.map(phase).sum
   }
 
-  def considerPatternForDigit(pattern: Seq[Int], digit: Int): Seq[Int] =
+  def considerPatternForDigit(pattern: Vector[Int], digit: Int): Vector[Int] =
     pattern.flatMap(i => SeqMultiplier.times(Seq(i), digit))
 
-  def applyPhase(sequence: Seq[Int]): Seq[Int] = {
-    (1 to sequence.length).map {
+  def applyPhase(sequence: Vector[Int]): Vector[Int] = {
+    (1 to sequence.length).toVector.map {
       n =>
-        val patternForDigit = considerPatternForDigit(pattern, n)
-        val multiplier = Math.ceil(sequence.length.toDouble / patternForDigit.length.toDouble).toInt
-        val resultPattern = SeqMultiplier.times(patternForDigit, multiplier + 1).tail
-        //        println(s"sequence: $sequence")
-        //        println(s"resultPattern: $resultPattern")
-        keepLeastSignificantDigit(applyPatternToPhase(sequence, resultPattern))
+        keepLeastSignificantDigit(applyPatternToPhase(sequence, n))
     }
   }
 
-  def applyForPhases(sequence: Seq[Int], noOfPhases: Int): Seq[Int] = {
+  def applyForPhases(sequence: Vector[Int], noOfPhases: Int): Vector[Int] = {
 
     @scala.annotation.tailrec
-    def go(n:Int, seq: Seq[Int]): Seq[Int] = {
+    def go(n:Int, seq: Vector[Int]): Vector[Int] = {
       if(n <= 0) seq
       else go(n - 1, applyPhase(seq))
     }
@@ -65,7 +66,7 @@ object FFT {
     go(noOfPhases, sequence)
   }
 
-  def apply100PhasesAndKeep8MostSignificant(sequence: Seq[Int]): Seq[Int] =
+  def apply100PhasesAndKeep8MostSignificant(sequence: Vector[Int]): Vector[Int] =
     applyForPhases(sequence, 100).take(8)
 
 

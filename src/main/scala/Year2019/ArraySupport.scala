@@ -1,5 +1,7 @@
 package Year2019
 
+import models.Position
+
 object ArraySupport {
 
   def reconstructArray[A](sequence: Seq[(Position, A)]): Seq[Seq[A]] =

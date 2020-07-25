@@ -1,7 +1,8 @@
 package Year2019
 
-import scala.io.Source
+import models.Position
 
+import scala.io.Source
 import scala.concurrent.ExecutionContext.Implicits.global
 object Day11 extends App {
 

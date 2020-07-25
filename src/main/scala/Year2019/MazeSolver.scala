@@ -1,10 +1,16 @@
 package Year2019
 
+import models.Position
+
 import scala.concurrent.Future
 
 sealed trait SearchResult
 case object SearchSuccess extends SearchResult
 case class SearchFailure(availableNextSteps: Seq[(Orientation, CraftTile)]) extends SearchResult
+
+sealed trait MazeTree
+case object MazeDeadEnd extends MazeTree
+case class MazeBranch(length: Int, orientation: Orientation, left: MazeTree, middle: MazeTree, right: MazeTree) extends MazeTree
 
 object MazeSolverMine {
 
@@ -19,8 +25,7 @@ object MazeSolverMine {
       //TODO: This bit needs to be better and prioritise unexplored tiled (which won't be in the set) otherwise we'll loop
       val unvisited: Seq[(Orientation, CraftTile)] = Seq(North, South, East, West).map {
         (d: Orientation) =>
-          val (dx, dy) = d.vector
-          val p = Position(position.x + dx, position.y + dy)
+          val p = position.add(d.vector)
           maze.find(_.position == p).map(t => (d, t)).getOrElse((d, Unexplored(p)))
       }.filterNot {
         t =>
@@ -42,6 +47,29 @@ object MazeSolverMine {
         .getOrElse(maze + DeadEnd(position))
     } else maze
   }
+
+  def convertMazeToTree(maze: Set[CraftTile], startingLocation: CraftTile, startingDirection: Orientation): MazeTree =
+    {
+      val lengthOfRun = ???
+      val leftDirection = Orientation.changeDirection(startingDirection, LeftTurn)
+      val leftStartingPosition = ??? //startingLocation.position
+      val rightDirection = Orientation.changeDirection(startingDirection, RightTurn)
+      val rightStartingPosition = ???
+      val middleStartingPosition = ???
+
+      MazeBranch(lengthOfRun, startingDirection,
+        convertMazeToTree(maze, leftStartingPosition, leftDirection),
+        convertMazeToTree(maze, middleStartingPosition, startingDirection),
+        convertMazeToTree(maze, rightStartingPosition, rightDirection)
+      )
+    }
+
+
+  def depthOfMazeTree(mazeBranch: MazeTree): Int =
+    mazeBranch match {
+      case _: MazeDeadEnd.type => 0
+      case branch: MazeBranch => branch.length + Seq(depthOfMazeTree(branch.left), depthOfMazeTree(branch.middle), depthOfMazeTree(branch.right)).max
+    }
 
 }
 
