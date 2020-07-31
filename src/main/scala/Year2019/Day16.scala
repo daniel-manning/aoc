@@ -1,7 +1,5 @@
 package Year2019
 
-import Year2019.FFT.{considerPatternForDigit, pattern}
-
 import scala.io.Source
 
 object Day16 extends App {
@@ -12,9 +10,7 @@ object Day16 extends App {
 
   val result = FFT.apply100PhasesAndKeep8MostSignificant(FFT.stringToSequence(sequence))
 
-  println(s"After applying 100 phases and keeping the 8 most significant figures: $result")
-
-  //println(s"Sequence length: ${sequence.length}")
+  println(s"After applying 100 phases and keeping the 8 most significant figures: ${result.mkString}")
 
 }
 
@@ -28,21 +24,18 @@ object SeqMultiplier {
 object FFT {
   val pattern = Seq(0,1,0,-1)
 
-  def keepLeastSignificantDigit(value: Int):Int =
-    value.toString.last.toInt - 48
+  def keepLeastSignificantDigit(value: Int): Int =
+    Math.abs(value) % 10
 
 
   def stringToSequence(sequence:String): Vector[Int] =
     sequence.map(_.toInt - 48).toVector
 
   def applyPatternToPhase(phase:Vector[Int], n: Int): Int = {
-    val length = phase.length
-    val pluses = (1 to length).flatMap(x => (1 to n).map(l => (n * (4*x - 3) + l - 2))).takeWhile(_ < length)
-    val minuses = (1 to length).flatMap(x => (1 to n).map(l => (n * (4*x - 1) + l - 2))).takeWhile(_ < length)
-/*    println(s"sums: ${pluses.map(phase)}")
-    println(s"minuses: ${minuses.map(phase)}")*/
+    val pluses = phase.drop(n - 1).sliding(4*n, 4*n).toList.flatMap(_.take(n))
+    val minuses = phase.drop(3 * n - 1).sliding(4*n, 4*n).toList.flatMap(_.take(n))
 
-    pluses.map(phase).sum - minuses.map(phase).sum
+    pluses.sum - minuses.sum
   }
 
   def considerPatternForDigit(pattern: Vector[Int], digit: Int): Vector[Int] =
@@ -69,7 +62,4 @@ object FFT {
   def apply100PhasesAndKeep8MostSignificant(sequence: Vector[Int]): Vector[Int] =
     applyForPhases(sequence, 100).take(8)
 
-
-//After applying 100 phases and keeping the 8 most significant figures: Vector(4, 5, 8, 3, 4, 2, 7, 2)
-  // 3m
 }
