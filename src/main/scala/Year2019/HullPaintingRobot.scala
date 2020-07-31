@@ -18,19 +18,19 @@ object Direction {
 }
 
 sealed trait Orientation{
-  def vector: (Int, Int)
+  def vector: TwoVector
 }
 case object North extends Orientation{
-  val vector = (0, 1)
+  val vector = TwoVector(0, 1)
 }
 case object East extends Orientation{
-  val vector = (1, 0)
+  val vector = TwoVector(1, 0)
 }
 case object West extends Orientation{
-  val vector = (-1, 0)
+  val vector = TwoVector(-1, 0)
 }
 case object South extends Orientation{
-  val vector = (0, -1)
+  val vector = TwoVector(0, -1)
 }
 
 object Orientation {

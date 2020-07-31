@@ -8,6 +8,10 @@ case class TwoVector(x:Int, y: Int){
     this.x*that.x + this.y*that.y
 
   def norm: Double = Math.sqrt(x*x + y*y)
+
+  def *(scalar: Int): TwoVector =
+    TwoVector(x * scalar, y * scalar)
+
 }
 
 object TwoVector {

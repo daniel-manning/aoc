@@ -25,7 +25,7 @@ object MazeSolverMine {
       //TODO: This bit needs to be better and prioritise unexplored tiled (which won't be in the set) otherwise we'll loop
       val unvisited: Seq[(Orientation, CraftTile)] = Seq(North, South, East, West).map {
         (d: Orientation) =>
-          val p = position.add(d.vector)
+          val p = position + d.vector
           maze.find(_.position == p).map(t => (d, t)).getOrElse((d, Unexplored(p)))
       }.filterNot {
         t =>
@@ -48,22 +48,52 @@ object MazeSolverMine {
     } else maze
   }
 
-  def convertMazeToTree(maze: Set[CraftTile], startingLocation: CraftTile, startingDirection: Orientation): MazeTree =
-    {
-      val lengthOfRun = ???
-      val leftDirection = Orientation.changeDirection(startingDirection, LeftTurn)
-      val leftStartingPosition = ??? //startingLocation.position
-      val rightDirection = Orientation.changeDirection(startingDirection, RightTurn)
-      val rightStartingPosition = ???
-      val middleStartingPosition = ???
-
-      MazeBranch(lengthOfRun, startingDirection,
-        convertMazeToTree(maze, leftStartingPosition, leftDirection),
-        convertMazeToTree(maze, middleStartingPosition, startingDirection),
-        convertMazeToTree(maze, rightStartingPosition, rightDirection)
-      )
+  private def impassable(maze: Set[CraftTile], position: Position): Boolean =
+    (maze.find(_.position == position)) match {
+      case Some(_: CraftWall) | Some(_: Unexplored) | None  => true
+      case _ => false
     }
 
+  def convertMazeToTree(maze: Set[CraftTile], startingLocation: Position, startingDirection: Orientation): MazeTree =
+    {
+      println(s"convertMazeToTree: $startingLocation ~ $startingDirection")
+
+        val lengthOfRun: Int = findNextBranchPoint(maze, startingLocation, startingDirection, count = 0)
+        println(s"length of run: $lengthOfRun")
+        val leftDirection: Orientation = Orientation.changeDirection(startingDirection, LeftTurn)
+        val leftStartingPosition: Position = startingLocation + (startingDirection.vector * lengthOfRun) + leftDirection.vector
+        val rightDirection: Orientation = Orientation.changeDirection(startingDirection, RightTurn)
+        val rightStartingPosition: Position = startingLocation + (startingDirection.vector * lengthOfRun) + leftDirection.vector
+        val middleStartingPosition: Position = startingLocation + (startingDirection.vector * lengthOfRun) + startingDirection.vector
+
+        println(s"going to look from $startingLocation in directions: $leftDirection, $startingDirection, $rightDirection")
+
+        MazeBranch(lengthOfRun, startingDirection,
+          if(impassable(maze, leftStartingPosition)) MazeDeadEnd else convertMazeToTree(maze, leftStartingPosition, leftDirection),
+          if(impassable(maze, middleStartingPosition)) MazeDeadEnd else convertMazeToTree(maze, middleStartingPosition, startingDirection),
+          if(impassable(maze, rightStartingPosition)) MazeDeadEnd else convertMazeToTree(maze, rightStartingPosition, rightDirection)
+        )
+    }
+
+  private def findNextBranchPoint(maze: Set[CraftTile], startingLocation: Position, startingDirection: Orientation, count: Int): Int = {
+    val leftDirection: Orientation = Orientation.changeDirection(startingDirection, LeftTurn)
+    val rightDirection: Orientation = Orientation.changeDirection(startingDirection, RightTurn)
+
+    val availableDirections = Seq(startingLocation + leftDirection.vector,  startingLocation + rightDirection.vector)
+      .map(p => maze.find(_.position == p))
+      .filterNot(oct => oct.exists(ct => ct.isInstanceOf[CraftWall] || ct.isInstanceOf[Unexplored]))
+      .length
+
+    val inForwardDirection = Seq(startingLocation + startingDirection.vector).map(p => maze.find(_.position == p))
+      .filterNot(oct => oct.exists(ct => ct.isInstanceOf[CraftWall] || ct.isInstanceOf[Unexplored]))
+      .length
+
+    if(inForwardDirection == 0 || availableDirections > 0) {
+      count
+    } else {
+      findNextBranchPoint(maze, startingLocation + startingDirection.vector, startingDirection, count + 1)
+    }
+  }
 
   def depthOfMazeTree(mazeBranch: MazeTree): Int =
     mazeBranch match {

@@ -1,7 +1,8 @@
 package models
 
+import Year2019.TwoVector
+
 case class Position(x:Int, y:Int) {
-  def add(vector: (Int, Int)): Position = {
-    Position(this.x + vector._1, this.y + vector._2)
-  }
+  def +(vector: TwoVector): Position =
+    Position(this.x + vector.x, this.y + vector.y)
 }

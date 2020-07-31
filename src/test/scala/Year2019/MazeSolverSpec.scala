@@ -43,7 +43,7 @@ class MazeSolverSpec extends AnyWordSpec with Matchers {
         MazeBranch(1, West, MazeBranch(1, North, MazeDeadEnd, MazeDeadEnd, MazeBranch(1, West, MazeDeadEnd, MazeDeadEnd, MazeDeadEnd)), MazeDeadEnd, MazeDeadEnd)
       )
 
-      MazeSolverMine.convertMazeToTree(maze, OxygenUnit(Position(0,0)), North) shouldBe tree
+      MazeSolverMine.convertMazeToTree(maze, Position(0,0), North) shouldBe tree
     }
   }
 
