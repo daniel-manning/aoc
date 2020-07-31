@@ -4,6 +4,7 @@ import java.awt.Color
 
 import Year2019.MazeSolverMine.{closeOffDeadEnds, searchFrom}
 import Year2019.ProgrammeOperations.vectorProgrammeToMap
+import Year2019.Window.robot
 import models.Position
 import monix.execution.Scheduler.Implicits.global
 import monix.reactive.Observable
@@ -262,12 +263,14 @@ object RepairDroid {
     if(ex1.isCompleted) None
     else if(robot.isFinished){
       //count up the active squares and output
-      val count = robot.tiles.flatMap {
-        case a: EmptySpace => Some(a)
-        case _   => None
-      }.size
+      val count = countSquaresOnRoute(robot.tiles)
+      val oxygenUnitTile = robot.tiles.find(_.isInstanceOf[OxygenUnit])
 
       println(s"The number of squares on the route is: $count")
+      val shipTree = MazeSolverMine.convertMazeToTree(robot.tiles, oxygenUnitTile.get.position, North)
+      //We have not uncovered all tiles but this will probably uncover the longest route (not guaranteed)
+      val longestRouteInShip = MazeSolverMine.depthOfMazeTree(shipTree)
+      println(s"It will take ${longestRouteInShip - 1} time units to spread to the whole ship")
       None
     }else {
       println(s"Running robot position: ${robot.position}")
@@ -275,5 +278,12 @@ object RepairDroid {
       //println(s"Robot tile map size: ${newRobot.hullTiles.size}")
       newRobot
     }
+  }
+
+  def countSquaresOnRoute(tiles: Set[CraftTile]): Int = {
+    tiles.flatMap {
+      case a: EmptySpace => Some(a)
+      case _   => None
+    }.size
   }
 }

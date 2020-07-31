@@ -17,17 +17,48 @@ class MazeSolverSpec extends AnyWordSpec with Matchers {
     }
 
     "calculate two branches correctly" in {
-      val tree = MazeBranch(0, North,
-        MazeBranch(1, East, MazeDeadEnd, MazeDeadEnd, MazeBranch(2, North, MazeDeadEnd, MazeDeadEnd, MazeBranch(1,East, MazeDeadEnd, MazeDeadEnd, MazeDeadEnd))),
+      val tree = MazeBranch(1, North,
+        MazeBranch(1, West, MazeDeadEnd, MazeDeadEnd, MazeBranch(2, North, MazeDeadEnd, MazeDeadEnd, MazeBranch(1,East, MazeDeadEnd, MazeDeadEnd, MazeDeadEnd))),
         MazeDeadEnd,
-        MazeBranch(1, West, MazeBranch(1, North, MazeDeadEnd, MazeDeadEnd, MazeBranch(1, West, MazeDeadEnd, MazeDeadEnd, MazeDeadEnd)), MazeDeadEnd, MazeDeadEnd)
+        MazeBranch(1, East, MazeBranch(1, North, MazeDeadEnd, MazeDeadEnd, MazeBranch(1, East, MazeDeadEnd, MazeDeadEnd, MazeDeadEnd)), MazeDeadEnd, MazeDeadEnd)
       )
 
-      MazeSolverMine.depthOfMazeTree(tree) shouldBe 4
+      MazeSolverMine.depthOfMazeTree(tree) shouldBe 5
     }
   }
 
   "maze to tree" should {
+    "construct the simplest tree" in {
+      val maze: Set[CraftTile] = Set(
+        CraftWall(Position(-1,3)), CraftWall(Position(0,3)),
+        CraftWall(Position(-1,2)), EmptySpace(Position(0,2)), CraftWall(Position(1,2)),
+        CraftWall(Position(-1,1)), EmptySpace(Position(0,1)), CraftWall(Position(1,1)),
+        CraftWall(Position(-1,0)), OxygenUnit(Position(0,0)), CraftWall(Position(1,0)),
+        CraftWall(Position(-1,-1)), CraftWall(Position(0,-1)), CraftWall(Position(1,-1))
+      )
+
+      val tree = MazeBranch(3, North, MazeDeadEnd, MazeDeadEnd, MazeDeadEnd)
+
+      MazeSolverMine.convertMazeToTree(maze, Position(0,0), North) shouldBe tree
+    }
+
+    "construct a tree with one bend" in {
+      val maze: Set[CraftTile] = Set(
+                                   CraftWall(Position(-1,3)), CraftWall(Position(0,3)),
+        CraftWall(Position(-2,2)), EmptySpace(Position(-1,2)), EmptySpace(Position(0,2)), CraftWall(Position(1,2)),
+                                   CraftWall(Position(-1,1)), EmptySpace(Position(0,1)), CraftWall(Position(1,1)),
+                                   CraftWall(Position(-1,0)), OxygenUnit(Position(0,0)), CraftWall(Position(1,0)),
+                                   CraftWall(Position(-1,-1)), CraftWall(Position(0,-1)), CraftWall(Position(1,-1))
+      )
+
+      val tree = MazeBranch(3, North,
+        MazeBranch(1, West, MazeDeadEnd, MazeDeadEnd, MazeDeadEnd),
+        MazeDeadEnd,
+        MazeDeadEnd)
+
+      MazeSolverMine.convertMazeToTree(maze, Position(0,0), North) shouldBe tree
+    }
+
     "construct a tree correctly" in {
       val maze: Set[CraftTile] = Set(
         CraftWall(Position(-1,3)), CraftWall(Position(0,3)),
@@ -37,10 +68,10 @@ class MazeSolverSpec extends AnyWordSpec with Matchers {
         CraftWall(Position(-1,-1)), CraftWall(Position(0,-1)), CraftWall(Position(1,-1))
       )
 
-      val tree = MazeBranch(0, North,
-        MazeBranch(1, East, MazeDeadEnd, MazeDeadEnd, MazeBranch(2, North, MazeDeadEnd, MazeDeadEnd, MazeBranch(1,East, MazeDeadEnd, MazeDeadEnd, MazeDeadEnd))),
+      val tree = MazeBranch(1, North,
+        MazeBranch(1, West, MazeDeadEnd, MazeDeadEnd, MazeBranch(2, North, MazeDeadEnd, MazeDeadEnd, MazeBranch(1,East, MazeDeadEnd, MazeDeadEnd, MazeDeadEnd))),
         MazeDeadEnd,
-        MazeBranch(1, West, MazeBranch(1, North, MazeDeadEnd, MazeDeadEnd, MazeBranch(1, West, MazeDeadEnd, MazeDeadEnd, MazeDeadEnd)), MazeDeadEnd, MazeDeadEnd)
+        MazeBranch(1, East, MazeBranch(1, North, MazeDeadEnd, MazeDeadEnd, MazeBranch(1, East, MazeDeadEnd, MazeDeadEnd, MazeDeadEnd)), MazeDeadEnd, MazeDeadEnd)
       )
 
       MazeSolverMine.convertMazeToTree(maze, Position(0,0), North) shouldBe tree

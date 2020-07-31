@@ -2,6 +2,7 @@ package Year2019
 
 import models.Position
 
+import scala.annotation.tailrec
 import scala.concurrent.Future
 
 sealed trait SearchResult
@@ -16,7 +17,7 @@ object MazeSolverMine {
 
   def searchFrom(maze: Set[CraftTile], position: Position)(implicit ex1: Future[IntCodeProgramme], queues: Queues): SearchResult = {
 
-    println(s"searching from position: $position")
+    //println(s"searching from position: $position")
     //have we found the exit?
     if(maze.find(_.position == position).exists(_.isInstanceOf[OxygenUnit])) {
       SearchSuccess
@@ -56,17 +57,21 @@ object MazeSolverMine {
 
   def convertMazeToTree(maze: Set[CraftTile], startingLocation: Position, startingDirection: Orientation): MazeTree =
     {
-      println(s"convertMazeToTree: $startingLocation ~ $startingDirection")
+      //println("------------------")
+      //println(s"convertMazeToTree: $startingLocation ~ $startingDirection")
 
         val lengthOfRun: Int = findNextBranchPoint(maze, startingLocation, startingDirection, count = 0)
-        println(s"length of run: $lengthOfRun")
+        //println(s"length of run: $lengthOfRun")
         val leftDirection: Orientation = Orientation.changeDirection(startingDirection, LeftTurn)
-        val leftStartingPosition: Position = startingLocation + (startingDirection.vector * lengthOfRun) + leftDirection.vector
+        val leftStartingPosition: Position = startingLocation + (startingDirection.vector * (lengthOfRun-1)) + leftDirection.vector
         val rightDirection: Orientation = Orientation.changeDirection(startingDirection, RightTurn)
-        val rightStartingPosition: Position = startingLocation + (startingDirection.vector * lengthOfRun) + leftDirection.vector
-        val middleStartingPosition: Position = startingLocation + (startingDirection.vector * lengthOfRun) + startingDirection.vector
+        val rightStartingPosition: Position = startingLocation + (startingDirection.vector * (lengthOfRun-1)) + rightDirection.vector
+        val middleStartingPosition: Position = startingLocation + (startingDirection.vector * (lengthOfRun-1)) + startingDirection.vector
 
-        println(s"going to look from $startingLocation in directions: $leftDirection, $startingDirection, $rightDirection")
+
+        //println(s"going to look from $startingLocation in directions: $leftDirection, $startingDirection, $rightDirection")
+        //println(s"moving on to look for walls at: $leftStartingPosition, $middleStartingPosition, $rightStartingPosition")
+        //println("------------------")
 
         MazeBranch(lengthOfRun, startingDirection,
           if(impassable(maze, leftStartingPosition)) MazeDeadEnd else convertMazeToTree(maze, leftStartingPosition, leftDirection),
@@ -75,6 +80,7 @@ object MazeSolverMine {
         )
     }
 
+  @tailrec
   private def findNextBranchPoint(maze: Set[CraftTile], startingLocation: Position, startingDirection: Orientation, count: Int): Int = {
     val leftDirection: Orientation = Orientation.changeDirection(startingDirection, LeftTurn)
     val rightDirection: Orientation = Orientation.changeDirection(startingDirection, RightTurn)
@@ -89,7 +95,7 @@ object MazeSolverMine {
       .length
 
     if(inForwardDirection == 0 || availableDirections > 0) {
-      count
+      count + 1
     } else {
       findNextBranchPoint(maze, startingLocation + startingDirection.vector, startingDirection, count + 1)
     }
