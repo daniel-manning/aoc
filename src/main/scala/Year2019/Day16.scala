@@ -12,6 +12,11 @@ object Day16 extends App {
 
   println(s"After applying 100 phases and keeping the 8 most significant figures: ${result.mkString}")
 
+  val trueMessage = SeqMultiplier.times(sequence, 10000)
+  val offset = trueMessage.take(7).mkString
+
+  println(s"Message length is  ${trueMessage.length} with an offset of $offset")
+
 }
 
 object SeqMultiplier {
