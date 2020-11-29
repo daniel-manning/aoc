@@ -47,6 +47,23 @@ object Orientation {
       case (West, LeftTurn) => South
     }
 
+  def fromVector(twoVector: TwoVector): Orientation = twoVector match {
+    case TwoVector(0,  1) => North
+    case TwoVector(0, -1) => South
+    case TwoVector(1,  0) => East
+    case TwoVector(-1, 0) => West
+  }
+
+  def turning(from: Orientation, to: Orientation): Char = (from, to) match {
+    case (North, East) => 'L'
+    case (North, West) => 'R'
+    case (East, North) => 'R'
+    case (East, South) => 'L'
+    case (South, East) => 'R'
+    case (South, West) => 'L'
+    case (West, South) => 'R'
+    case (West, North) => 'L'
+  }
 }
 
 
